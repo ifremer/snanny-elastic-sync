@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sml:PhysicalSystem xmlns:sml="http://www.opengis.net/sensorml/2.0" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" gml:id="top" xsi:schemaLocation="http://www.opengis.net/sensorml/2.0 http://schemas.opengis.net/sensorML/2.0/sensorML.xsd">
+    <!-- Description --> 
+    <gml:description>mooring</gml:description>
+    <!-- Name --> 
+    <gml:name >Borel</gml:name>  
+    <!-- keywords--> 
+    <sml:keywords>
+        <sml:KeywordList>
+            <sml:keyword>Oceanography</sml:keyword>
+            <sml:keyword>Meteorology</sml:keyword>
+            <sml:keyword>Observatory</sml:keyword>
+            <sml:keyword>Wind speed</sml:keyword>
+            <sml:keyword>Currents</sml:keyword>
+        </sml:KeywordList>
+    </sml:keywords>
+    
+    <!-- Identification--> 
+       <sml:identification>
+        <sml:IdentifierList>
+    <sml:identifier>
+        
+        <sml:Term definition="http://www.ifremer.fr/tematres/vocab/index.php?tema=66">
+            <sml:label>UUID</sml:label>
+            <sml:value>f8ea62f1-277a-4fb6-bf19-0238ea8f8d54</sml:value>
+        </sml:Term>
+    </sml:identifier>
+       
+    </sml:IdentifierList>
+    </sml:identification>
+    
+    <!-- Classification -->
+            
+              
+               
+    
+    <!-- Contacts -->
+      
+                        
+       
+   
+    <!-- history -->
+    
+                
+                
+            
+                
+    <!-- type OF -->
+    <sml:typeOf xlink:href="basic.Platform.xml"></sml:typeOf>
+   
+    <!-- output -->
+           
+              
+               
+   
+   <!-- position -->
+    <sml:position>        
+        <gml:Point gml:id="stationLocation" srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+            <gml:coordinates>37.302666 32.2765</gml:coordinates>
+        </gml:Point>        
+    </sml:position>
+    <!-- components list --> 
+    <sml:components>
+        <sml:ComponentList>
+            <sml:component name="Seamon west" xlink:href="7764633d-499b-4a17-bade-6059beabc229" ></sml:component>
+            <sml:component name="Seamon east" xlink:href="c3e8dde7-477e-43ba-9b17-633a17eab829" ></sml:component>
+           
+        </sml:ComponentList>
+    </sml:components>
+   
+
+    
+</sml:PhysicalSystem>

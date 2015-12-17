@@ -1,0 +1,66 @@
+{
+  "snanny-observation": {
+    "_source": {
+      "includes": [
+        "meta.*",
+        "doc.*"
+      ]
+    },
+    "properties": {
+      "meta": {
+        "include_in_all": false,
+        "type": "object"
+      },
+      "doc": {
+        "properties": {
+          "snanny-resulttimestamp": {
+            "type": "date",
+            "ignore_malformed" : true
+          },
+          "snanny-updatetimestamp": {
+            "type": "date",
+            "ignore_malformed" : true
+          },
+          "snanny-ancestors": {
+            "properties": {
+              "snanny-ancestor-name": {
+                "type": "string"
+              },
+              "snanny-ancestor-uuid": {
+                "type": "string",
+                "index": "not_analyzed" 
+              },
+              "snanny-ancestor-description": {
+                "type": "string"
+              },
+              "snanny-ancestor-terms":{
+              	"type": "string"
+              }
+            }
+          },
+          "snanny-depth": {
+            "type": "double"
+          },
+          "snanny-id": {
+            "type": "string",
+            "index": "not_analyzed" 
+          },
+          "snanny-uuid": {
+            "type": "string",
+            "index": "not_analyzed" 
+          },
+          "snanny-name": {
+            "type": "string"
+          },
+          "snanny-coordinates": {
+             "type":"geo_point"
+            
+          },
+          "snanny-description": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
