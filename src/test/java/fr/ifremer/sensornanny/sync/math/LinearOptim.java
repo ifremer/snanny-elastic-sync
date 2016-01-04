@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 import org.apache.commons.math3.analysis.interpolation.LoessInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import fr.ifremer.sensornanny.sync.dto.model.TimePosition;
@@ -19,6 +20,7 @@ public class LinearOptim {
     double[] lon = new double[200];
 
     @Test
+    @Ignore
     public void testLinearOptm() {
         LoessInterpolator interpolator = new LoessInterpolator();
 
@@ -37,7 +39,7 @@ public class LinearOptim {
                     PolynomialSplineFunction interpolate = interpolator.interpolate(lat, lon);
                     PolynomialFunction[] polynomials = interpolate.getPolynomials();
                     for (PolynomialFunction polynomialFunction : polynomials) {
-                        // polynomialFunction.
+                        polynomialFunction.degree();
                     }
 
                     cursor = 0;
