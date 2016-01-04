@@ -27,6 +27,7 @@ import fr.ifremer.sensornanny.sync.dto.model.Term;
 import fr.ifremer.sensornanny.sync.dto.model.TimePosition;
 import fr.ifremer.sensornanny.sync.dto.owncloud.Content;
 import fr.ifremer.sensornanny.sync.dto.owncloud.FileInfo;
+import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatus;
 import fr.ifremer.sensornanny.sync.parse.ParseUtil;
 import fr.ifremer.sensornanny.sync.parse.impl.OMParser;
 import fr.ifremer.sensornanny.sync.parse.impl.SensorMLParser;
@@ -113,12 +114,18 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
      * @param fileInfo fileInfo to index
      */
     private void onIndex(FileInfo fileInfo) {
+        IndexStatus indexStatus = new IndexStatus();
+        indexStatus.setFileId(fileInfo.getFileId());
+        indexStatus.setIndexedObservations(0);
+        indexStatus.setTime(System.currentTimeMillis());
         try {
             Content content = ownCloudDao.getContent(fileInfo.getFileId());
             JAXBElement<InsertObservationType> result = ParseUtil.parse(omParser, content.getContent());
             List<OM> observations = xmlONDtoConverter.fromXML(result);
             // Suppression de l'index
             for (OM observation : observations) {
+
+                indexStatus.setUuid(observation.getIdentifier());
                 // Get the procedure
                 String procedure = observation.getProcedure();
                 String systemUuid = new File(procedure).getName();
@@ -129,11 +136,14 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
                 // Retrieve the sensorML
                 SensorML sensor = cacheSystem.getData(systemUuid);
                 Axis axis = sensor.getCoordinate();
+
                 observationDataManager.readData(fileInfo.getFileId(), observationResult, new Consumer<TimePosition>() {
 
                     @Override
                     public void accept(TimePosition timePosition) {
-                        if (timePosition.getRecordNumber() % 50 == 0) {
+
+                        if (timePosition.getRecordNumber() % 25 == 0) {
+
                             ObservationJson item = new ObservationJson();
                             String identifier = observation.getIdentifier();
                             item.setUuid(identifier);
@@ -160,14 +170,21 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
                             item.setCoordinates(coordinates);
                             String uuid = new StringBuilder(identifier).append(ID_SEPARATOR).append(String.format(
                                     FORMAT_ZERO_PAD, timePosition.getRecordNumber())).toString();
-                            elasticWriter.write(uuid, item);
+                            if (elasticWriter.write(uuid, item)) {
+                                indexStatus.increaseIndexed();
+                            }
                         }
                     }
                 });
+
+                ownCloudDao.updateIndexStatus(indexStatus);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            indexStatus.setStatus(false);
+            indexStatus.setMessage(e.getMessage());
+            ownCloudDao.updateIndexStatus(indexStatus);
         }
+
     }
 
     /**

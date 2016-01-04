@@ -7,6 +7,7 @@ import java.util.List;
 import fr.ifremer.sensornanny.sync.dto.owncloud.Activity;
 import fr.ifremer.sensornanny.sync.dto.owncloud.Content;
 import fr.ifremer.sensornanny.sync.dto.owncloud.FileSizeInfo;
+import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatus;
 
 /**
  * Interface owncloud
@@ -24,6 +25,13 @@ public interface IOwncloudDao {
      * @return map containing each activity (creation, modification, deletion) for a file
      */
     List<Activity> getActivities(Date from, Date to);
+
+    /**
+     * Retrieve the last failures items
+     * 
+     * @return map containing each activity (creation, modification, deletion) for a file
+     */
+    List<Activity> getFailedActivities();
 
     /**
      * Retrieve content form id
@@ -65,4 +73,11 @@ public interface IOwncloudDao {
      */
     List<String> getAncestors(String uuid);
 
+    /**
+     * Update indexation status
+     * 
+     * @param idOM identifier of the OM
+     * @param indexStatus index statuso
+     */
+    void updateIndexStatus(IndexStatus indexStatus);
 }

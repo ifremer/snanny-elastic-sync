@@ -4,15 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Consumer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.ifremer.sensornanny.sync.dto.model.TimePosition;
 import fr.ifremer.sensornanny.sync.parse.observations.IObservationParser;
 import fr.ifremer.sensornanny.sync.util.DateUtils;
 import ucar.ma2.Array;
 import ucar.nc2.NetcdfFile;
-import ucar.nc2.util.IO;
 
 /**
  * Concrete parser for momar observation file
@@ -30,22 +26,20 @@ public class NetCdfObservationParser implements IObservationParser<TimePosition>
 
     private static final String LONG_SECTION = "long";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NetCdfObservationParser.class);
-
     private static final String ACCEPTED_FORMAT = "application/netcdf";
 
     @Override
     public void read(String fileName, InputStream stream, Consumer<TimePosition> consumer) {
         NetcdfFile cdfFile = null;
         try {
-            cdfFile = NetcdfFile.openInMemory(fileName, IO.readContentsToByteArray(stream));
+            cdfFile = NetcdfFile.openInMemory(fileName, ucar.nc2.util.IO.readContentsToByteArray(stream));
             Array longitudeSection = cdfFile.readSection(LONG_SECTION);
             Array latitudeSection = cdfFile.readSection(LAT_SECTION);
             Array timeSection = cdfFile.readSection(TIME_SECTION);
             Array depthSection = cdfFile.readSection(DEPTH_SECTION);
 
             long size = longitudeSection.getSize();
-            for (int i = 0; i < size; i += 100) {
+            for (int i = 0; i < size; i++) {
                 TimePosition timePosition = new TimePosition();
                 timePosition.setRecordNumber(Long.valueOf(i));
                 timePosition.setLongitude(longitudeSection.getFloat(i));
@@ -56,7 +50,7 @@ public class NetCdfObservationParser implements IObservationParser<TimePosition>
             }
 
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            // LOGGER.error(e.getMessage(), e);
             e.printStackTrace();
         } finally {
             closeQuietly(cdfFile);

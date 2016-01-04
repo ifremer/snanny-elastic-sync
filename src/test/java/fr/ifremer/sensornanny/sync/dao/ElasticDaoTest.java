@@ -92,4 +92,9 @@ public class ElasticDaoTest extends UnitTest {
 
     }
 
+    @Test
+    public void testDelete() {
+        dao.delete("");
+    }
+
 }

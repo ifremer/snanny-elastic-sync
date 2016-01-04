@@ -11,6 +11,7 @@ import java.util.List;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.GsonHttpMessageConverter;
@@ -22,6 +23,8 @@ import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
 import fr.ifremer.sensornanny.sync.dto.owncloud.Activity;
 import fr.ifremer.sensornanny.sync.dto.owncloud.Content;
 import fr.ifremer.sensornanny.sync.dto.owncloud.FileSizeInfo;
+import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatus;
+import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatusResponse;
 import fr.ifremer.sensornanny.sync.dto.owncloud.SensorMLAncestors;
 
 /**
@@ -44,6 +47,7 @@ public class OwncloudDaoImpl implements IOwncloudDao {
     private static final String TO_PARAMETER = "to";
     private static final String FROM_PARAMETER = "from";
     private static final String FILES_SERVICES = "/files";
+    private static final String FILES_FAILURE_SERVICES = "/files/failure";
 
     @Override
     public List<Activity> getActivities(Date from, Date to) {
@@ -54,6 +58,16 @@ public class OwncloudDaoImpl implements IOwncloudDao {
                 .queryParam(TO_PARAMETER, to.getTime() / 1000)
                 // Extensions
                 .queryParam(EXTENSIONS_PARAMETER, "xml")
+                // GetUri
+                .build().encode().toUri();
+
+        Activity[] activities = get(uri, Activity[].class, new GsonHttpMessageConverter());
+        return activities != null ? Arrays.asList(activities) : new ArrayList<>();
+    }
+
+    @Override
+    public List<Activity> getFailedActivities() {
+        URI uri = UriComponentsBuilder.fromHttpUrl(Config.owncloudEndpoint() + FILES_FAILURE_SERVICES)
                 // GetUri
                 .build().encode().toUri();
 
@@ -81,17 +95,47 @@ public class OwncloudDaoImpl implements IOwncloudDao {
      * @return result of the get action
      */
     private <T> T get(URI uri, Class<T> clazz, HttpMessageConverter<?> converter) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(AUTHORIZATION_HEADER, BASIC_HEADER + Config.owncloudCredentials());
-        HttpEntity<HttpHeaders> entity = new HttpEntity<>(headers);
-        RestTemplate restTemplate = new RestTemplate();
-        if (converter != null) {
-            restTemplate.setMessageConverters(Arrays.asList(converter));
-        }
-        ResponseEntity<T> response = restTemplate.exchange(uri, HttpMethod.GET, entity, clazz);
+        RestTemplate template = init(converter);
+        ResponseEntity<T> response = template.exchange(uri, HttpMethod.GET, createEntity(), clazz);
 
         return response.getBody();
 
+    }
+
+    /**
+     * Allow to call rest template using headers with authentication
+     * 
+     * @param uri URI to acces with
+     * @param clazz returned class
+     * @return result of the get action
+     */
+    private <T, R> ResponseEntity<R> post(URI uri, HttpMessageConverter<?> converter, T data, Class<R> clazz) {
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set(AUTHORIZATION_HEADER, BASIC_HEADER + Config.owncloudCredentials());
+
+        HttpEntity<T> httpEntity = new HttpEntity<>(data, headers);
+
+        RestTemplate restTemplate = init(converter);
+        return restTemplate.exchange(uri, HttpMethod.POST, httpEntity, clazz);
+    }
+
+    private RestTemplate init(HttpMessageConverter<?> converter) {
+        RestTemplate restTemplate = new RestTemplate();
+
+        if (converter != null) {
+            restTemplate.setMessageConverters(Arrays.asList(converter));
+        }
+
+        return restTemplate;
+
+    }
+
+    private HttpEntity<?> createEntity() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(AUTHORIZATION_HEADER, BASIC_HEADER + Config.owncloudCredentials());
+        return new HttpEntity<>(headers);
     }
 
     @Override
@@ -132,6 +176,14 @@ public class OwncloudDaoImpl implements IOwncloudDao {
         URI uri = UriComponentsBuilder.fromHttpUrl(Config.smlEndpoint() + uuid + ANCESTORS).build().encode().toUri();
         SensorMLAncestors result = get(uri, SensorMLAncestors.class, new GsonHttpMessageConverter());
         return result.getAncestors();
+    }
+
+    @Override
+    public void updateIndexStatus(IndexStatus indexStatus) {
+        URI uri = UriComponentsBuilder.fromHttpUrl(Config.owncloudEndpoint() + "/om").build().encode().toUri();
+        ResponseEntity<IndexStatusResponse> result = post(uri, new GsonHttpMessageConverter(), indexStatus,
+                IndexStatusResponse.class);
+        System.out.println(result.getBody());
     }
 
 }

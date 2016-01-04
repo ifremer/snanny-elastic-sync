@@ -92,7 +92,6 @@ public class ElasticDaoImpl implements IElasticDao {
             getClient().update(updateRequest).get();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
             return false;
         }
     }

@@ -18,6 +18,7 @@ import fr.ifremer.sensornanny.sync.base.UnitTest;
 import fr.ifremer.sensornanny.sync.dao.impl.OwncloudDaoImpl;
 import fr.ifremer.sensornanny.sync.dto.owncloud.Activity;
 import fr.ifremer.sensornanny.sync.dto.owncloud.Content;
+import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatus;
 
 public class OwncloudDaoTest extends UnitTest {
 
@@ -72,6 +73,18 @@ public class OwncloudDaoTest extends UnitTest {
         List<String> ancestors = dao.getAncestors("7764633d-499b-4a17-bade-6059beabc229");
         Assert.assertNotNull("ancestors must not be null", ancestors);
         Assert.assertEquals(1, ancestors.size());
+    }
+
+    @Test
+    public void testPostIndex() {
+        IndexStatus idx = new IndexStatus();
+        idx.setIndexedObservations(100);
+        idx.setMessage("OK");
+        idx.setStatus(true);
+        idx.setTime(System.currentTimeMillis());
+        idx.setUuid("abb037654-myuuid-sdsdgfqsdfwhbv");
+
+        dao.updateIndexStatus(idx);
     }
 
 }
