@@ -28,6 +28,16 @@ public class OwncloudReaderImpl implements IOwncloudReader {
     @Override
     public Map<FileInfo, List<Activity>> getActivities(Date from, Date to) {
         List<Activity> activities = owncloudDao.getActivities(from, to);
+        return toMapInfo(activities);
+    }
+
+    @Override
+    public Map<FileInfo, List<Activity>> getFailedSyncActivities() {
+        List<Activity> activities = owncloudDao.getFailedActivities();
+        return toMapInfo(activities);
+    }
+
+    private Map<FileInfo, List<Activity>> toMapInfo(List<Activity> activities) {
         Map<FileInfo, List<Activity>> map = new HashMap<>();
 
         for (Activity activity : activities) {

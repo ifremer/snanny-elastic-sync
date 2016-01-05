@@ -20,6 +20,13 @@ public interface IOwncloudReader {
     Map<FileInfo, List<Activity>> getActivities(Date from, Date to);
 
     /**
+     * Retrieve the files which failed during the last sync
+     * 
+     * @return map containing each activity for a file
+     */
+    Map<FileInfo, List<Activity>> getFailedSyncActivities();
+
+    /**
      * Retrieve content form id
      * 
      * @param id identifier of the content

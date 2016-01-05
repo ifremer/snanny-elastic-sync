@@ -13,5 +13,18 @@ Configuration files are :
   - application.properties
   	Configure elasticsearch entry point and owncloud entrypoint
   	
+## First launch
+
+- Create an elasticSearch index and configure the mapping (see mapping.json)
+- Install the owncloud api plugin
+- execute command line
+ 	
 ## Usage 
-java snanny-elastic-sync.jar sync 
+java -jar elastic-sync.jar 
+ -h,--help                print this message
+ -r,--range <from> <to>   Synchronize from owncloud to elasticsearch since
+                          a period
+ -s,--since <period>      Synchronize from owncloud to elasticsearch since
+                          a period
+ -f,--relaunch_failure    Synchronize from owncloud to elasticsearch the last 
+ 						  failed synchronization

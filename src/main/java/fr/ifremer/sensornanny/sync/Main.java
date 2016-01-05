@@ -38,9 +38,13 @@ public class Main {
 
     private static final String RANGE_OPTION = "r";
 
+    private static final String RELAUNCH_FAILURES = "f";
+
     private static final String SINCE_OPTION = "s";
 
     private static final String HELP_OPTION = "h";
+
+    private static Injector injector;
 
     public static void main(String[] args) {
 
@@ -53,25 +57,32 @@ public class Main {
                 "Synchronize from owncloud to elasticsearch since a period").build();
         options.addOption(sinceOption);
         Option rangeOption = Option.builder(RANGE_OPTION).longOpt("range").numberOfArgs(2).argName("from> <to").desc(
-                "Synchronize from owncloud to elasticsearch since a period").build();
+                "Synchronize from owncloud to elasticsearch from date to date").build();
         options.addOption(rangeOption);
+        Option failOption = Option.builder(RELAUNCH_FAILURES).longOpt("relaunch_failure").numberOfArgs(0).desc(
+                "Synchronize from owncloud to elasticsearch the last failed synchronization").build();
+        options.addOption(failOption);
 
         CommandLineParser parser = new DefaultParser();
         try {
+
             CommandLine result = parser.parse(options, args);
             Option[] resultOptions = result.getOptions();
             if (resultOptions.length != 1) {
                 showHelp(options);
             } else {
+                injector = Guice.createInjector(new ElasticSyncModule());
                 Option option = resultOptions[0];
                 switch (option.getOpt()) {
 
                     case SINCE_OPTION:
                         executeWithOptionSince(option);
                         break;
-                    case HELP_OPTION:
+                    case RANGE_OPTION:
                         executeWithOptionRange(option);
                         break;
+                    case RELAUNCH_FAILURES:
+                        executeWithOptionFailure();
                     default:
                         showHelp(options);
                         break;
@@ -81,6 +92,7 @@ public class Main {
         } catch (ParseException e) {
             showHelp(options);
         }
+        System.exit(0);
     }
 
     private static void executeWithOptionSince(Option option) throws ParseException {
@@ -96,6 +108,19 @@ public class Main {
         } catch (DateTimeParseException e) {
             throw new ParseException(e.getMessage());
         }
+    }
+
+    private static void executeWithOptionFailure() {
+        long time = System.currentTimeMillis();
+        LOGGER.info(String.format("Sync Failed sync Owncloud files"));
+
+        IOwncloudReader owncloudReader = injector.getInstance(IOwncloudReader.class);
+        Map<FileInfo, List<Activity>> activities = owncloudReader.getFailedSyncActivities();
+
+        executeSynchronization(activities);
+
+        long timeTook = (System.currentTimeMillis() - time) / 1000;
+        LOGGER.info(String.format("Sync %d files modified, Time %ds", activities.size(), timeTook));
     }
 
     private static void executeWithOptionRange(Option option) throws ParseException {
@@ -116,15 +141,19 @@ public class Main {
     protected static void execute(Date from, Date to) {
         long time = System.currentTimeMillis();
         LOGGER.info(String.format("Sync Owncloud files modified between %s and %s", from, to));
-        Injector injector = Guice.createInjector(new ElasticSyncModule());
 
         IOwncloudReader owncloudReader = injector.getInstance(IOwncloudReader.class);
         Map<FileInfo, List<Activity>> activities = owncloudReader.getActivities(from, to);
 
-        int size = activities.size();
+        executeSynchronization(activities);
 
-        LOGGER.info(String.format("%d modification to synchronize ", size));
-        if (size > 0) {
+        long timeTook = (System.currentTimeMillis() - time) / 1000;
+        LOGGER.info(String.format("Sync %d files modified, Time %ds", activities.size(), timeTook));
+    }
+
+    private static void executeSynchronization(Map<FileInfo, List<Activity>> activities) {
+        LOGGER.info(String.format("%d files to synchronize ", activities.size()));
+        if (activities.size() > 0) {
             FifoReader fifoReader = new FifoReader(activities.entrySet().iterator());
 
             LOGGER.info(String.format("Start %d executors", Config.threadNumbers()));
@@ -144,10 +173,6 @@ public class Main {
                 }
             }
         }
-        long timeTook = (System.currentTimeMillis() - time) / 1000;
-        LOGGER.info(String.format("Sync %d files modified, Time %ds", size, timeTook));
-
-        System.exit(0);
     }
 
 }
