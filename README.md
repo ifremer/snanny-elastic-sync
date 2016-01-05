@@ -21,10 +21,9 @@ Configuration files are :
  	
 ## Usage 
 java -jar elastic-sync.jar 
- -h,--help                print this message
- -r,--range <from> <to>   Synchronize from owncloud to elasticsearch since
-                          a period
- -s,--since <period>      Synchronize from owncloud to elasticsearch since
-                          a period
- -f,--relaunch_failure    Synchronize from owncloud to elasticsearch the last 
- 						  failed synchronization
+
+|option | detail|
+| -h,--help              |  print this message|
+| -r,--range <from> <to> |  Synchronize from owncloud to elasticsearch since a period|
+| -s,--since <period>    |  Synchronize from owncloud to elasticsearch since a period|
+| -f,--relaunch_failure  |  Synchronize from owncloud to elasticsearch the last failed synchronization|
