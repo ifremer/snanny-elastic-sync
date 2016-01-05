@@ -14,6 +14,7 @@ import com.google.inject.Inject;
 
 import fr.ifremer.sensornanny.sync.cache.impl.SensorMLCacheManager;
 import fr.ifremer.sensornanny.sync.cache.impl.TermCacheManager;
+import fr.ifremer.sensornanny.sync.config.Config;
 import fr.ifremer.sensornanny.sync.converter.XmlOMDtoConverter;
 import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.Ancestor;
@@ -122,6 +123,7 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
             Content content = ownCloudDao.getContent(fileInfo.getFileId());
             JAXBElement<InsertObservationType> result = ParseUtil.parse(omParser, content.getContent());
             List<OM> observations = xmlONDtoConverter.fromXML(result);
+            final int syncModulo = Config.syncModulo();
             // Suppression de l'index
             for (OM observation : observations) {
 
@@ -142,7 +144,7 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
                     @Override
                     public void accept(TimePosition timePosition) {
 
-                        if (timePosition.getRecordNumber() % 25 == 0) {
+                        if (timePosition.getRecordNumber() % syncModulo == 0) {
 
                             ObservationJson item = new ObservationJson();
                             String identifier = observation.getIdentifier();

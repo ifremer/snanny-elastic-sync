@@ -134,6 +134,15 @@ public final class Config {
     }
 
     /**
+     * Get the cache size
+     * 
+     * @return number of item in cache
+     */
+    public static int syncModulo() {
+        return getInt("sync.modulo", 100);
+    }
+
+    /**
      * Check properties
      */
     private void checkProperties() {
