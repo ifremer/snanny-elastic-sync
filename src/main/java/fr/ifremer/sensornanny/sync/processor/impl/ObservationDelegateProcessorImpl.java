@@ -4,22 +4,25 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBElement;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import com.google.inject.Inject;
 
 import fr.ifremer.sensornanny.sync.cache.impl.SensorMLCacheManager;
 import fr.ifremer.sensornanny.sync.cache.impl.TermCacheManager;
 import fr.ifremer.sensornanny.sync.config.Config;
+import fr.ifremer.sensornanny.sync.converter.PermissionsConverter;
 import fr.ifremer.sensornanny.sync.converter.XmlOMDtoConverter;
 import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.Ancestor;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.Coordinates;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.ObservationJson;
+import fr.ifremer.sensornanny.sync.dto.elasticsearch.Permission;
 import fr.ifremer.sensornanny.sync.dto.model.Axis;
 import fr.ifremer.sensornanny.sync.dto.model.OM;
 import fr.ifremer.sensornanny.sync.dto.model.OMResult;
@@ -27,17 +30,15 @@ import fr.ifremer.sensornanny.sync.dto.model.SensorML;
 import fr.ifremer.sensornanny.sync.dto.model.Term;
 import fr.ifremer.sensornanny.sync.dto.model.TimePosition;
 import fr.ifremer.sensornanny.sync.dto.owncloud.Content;
-import fr.ifremer.sensornanny.sync.dto.owncloud.FileInfo;
 import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatus;
+import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
 import fr.ifremer.sensornanny.sync.parse.ParseUtil;
 import fr.ifremer.sensornanny.sync.parse.impl.OMParser;
-import fr.ifremer.sensornanny.sync.parse.impl.SensorMLParser;
-import fr.ifremer.sensornanny.sync.parse.observations.impl.MomarObservationParser;
 import fr.ifremer.sensornanny.sync.processor.IDelegateProcessor;
+import fr.ifremer.sensornanny.sync.report.ReportManager;
 import fr.ifremer.sensornanny.sync.util.UrlUtils;
 import fr.ifremer.sensornanny.sync.writer.IElasticWriter;
 import net.opengis.sos.v_2_0.InsertObservationType;
-import net.opengis.sos.v_2_0.InsertObservationType.Observation;
 
 /**
  * Implementation of observation delegate processor
@@ -47,6 +48,8 @@ import net.opengis.sos.v_2_0.InsertObservationType.Observation;
  */
 public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
 
+    private static final Logger LOGGER = Logger.getLogger(ObservationDelegateProcessorImpl.class.getName());
+
     private static final String FORMAT_ZERO_PAD = "%010d";
 
     private static final String ID_SEPARATOR = "-";
@@ -54,67 +57,51 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
     private static final String TEMA_QUERY_PARAMETER = "tema";
 
     @Inject
-    IOwncloudDao ownCloudDao;
+    private IOwncloudDao ownCloudDao;
 
     @Inject
-    IElasticWriter elasticWriter;
+    private IElasticWriter elasticWriter;
 
     @Inject
-    OMParser omParser;
+    private OMParser omParser;
 
     @Inject
-    SensorMLParser smlParser;
+    private XmlOMDtoConverter xmlONDtoConverter;
 
     @Inject
-    XmlOMDtoConverter xmlONDtoConverter;
+    private PermissionsConverter permissionConverter;
 
     @Inject
-    SensorMLCacheManager cacheSystem;
+    private SensorMLCacheManager cacheSystem;
 
     @Inject
-    TermCacheManager cacheTerm;
+    private TermCacheManager cacheTerm;
 
     @Inject
-    MomarObservationParser momarParser;
-
-    @Inject
-    ObservationDataManager observationDataManager;
+    private ObservationDataManager observationDataManager;
 
     @Override
-    public void execute(FileInfo fileInfo, boolean isDeleted) {
-        if (isDeleted) {
-            onDelete(fileInfo);
+    public void execute(OwncloudSyncModel model) {
+        if (model.isStatus()) {
+            onIndex(model);
         } else {
-            onIndex(fileInfo);
+            onDelete(model);
         }
     }
 
     /**
      * Called on delete file
      */
-    private void onDelete(FileInfo fileInfo) {
-        try {
-            Content content = ownCloudDao.getContent(fileInfo.getFileId());
-            JAXBElement<InsertObservationType> result = ParseUtil.parse(omParser, content.getContent());
-            List<Observation> observations = result.getValue().getObservation();
-            // Suppression de l'index
-            for (Observation observation : observations) {
-                String uuid = observation.getOMObservation().getIdentifier().getValue();
-
-                elasticWriter.delete(uuid);
-            }
-        } catch (Exception e) {
-            String uuid = getFileNameWithoutExt(fileInfo.getFilePath());
-            elasticWriter.delete(uuid);
-        }
+    private void onDelete(OwncloudSyncModel fileInfo) {
+        elasticWriter.delete(fileInfo.getUuid());
     }
 
     /**
-     * Called on Index
+     * Called on Index a new file
      * 
      * @param fileInfo fileInfo to index
      */
-    private void onIndex(FileInfo fileInfo) {
+    private void onIndex(OwncloudSyncModel fileInfo) {
         IndexStatus indexStatus = new IndexStatus();
         indexStatus.setFileId(fileInfo.getFileId());
         indexStatus.setIndexedObservations(0);
@@ -124,6 +111,10 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
             JAXBElement<InsertObservationType> result = ParseUtil.parse(omParser, content.getContent());
             List<OM> observations = xmlONDtoConverter.fromXML(result);
             final int syncModulo = Config.syncModulo();
+
+            // Get shares informations
+            Permission permission = permissionConverter.extractPermissions(content.getShares());
+
             // Suppression de l'index
             for (OM observation : observations) {
 
@@ -152,6 +143,7 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
                             item.setAncestors(ancestors);
                             item.setName(observation.getName());
                             item.setResult(observationResult.getUrl());
+                            item.setAuthor(content.getUser());
 
                             item.setDescription(observation.getDescription());
                             item.setUpdateTimestamp(observation.getUpdateDate());
@@ -170,6 +162,10 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
                                 item.setDepth(axis.getDep());
                             }
                             item.setCoordinates(coordinates);
+
+                            // Set permissions
+                            item.setPermission(permission);
+
                             String uuid = new StringBuilder(identifier).append(ID_SEPARATOR).append(String.format(
                                     FORMAT_ZERO_PAD, timePosition.getRecordNumber())).toString();
                             if (elasticWriter.write(uuid, item)) {
@@ -180,10 +176,14 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
                 });
 
                 ownCloudDao.updateIndexStatus(indexStatus);
+                ReportManager.log(String.format("File %s, Sync succeed - Indexed elements : %d", fileInfo.getName(),
+                        indexStatus.getIndexedObservations()));
             }
         } catch (Exception e) {
             indexStatus.setStatus(false);
             indexStatus.setMessage(e.getMessage());
+            ReportManager.err(String.format("File %s, Sync failed ", fileInfo.getName()), e);
+            LOGGER.log(Level.SEVERE, e.getMessage(), e);
             ownCloudDao.updateIndexStatus(indexStatus);
         }
 
@@ -250,12 +250,6 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
             }
         }
         return terms;
-    }
-
-    private String getFileNameWithoutExt(String filePath) {
-        String filename = new File(filePath).getName();
-        // Remove extensions
-        return StringUtils.removeEnd(filename, ".xml");
     }
 
 }

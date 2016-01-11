@@ -20,11 +20,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import fr.ifremer.sensornanny.sync.config.Config;
 import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
-import fr.ifremer.sensornanny.sync.dto.owncloud.Activity;
 import fr.ifremer.sensornanny.sync.dto.owncloud.Content;
 import fr.ifremer.sensornanny.sync.dto.owncloud.FileSizeInfo;
 import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatus;
 import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatusResponse;
+import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
 import fr.ifremer.sensornanny.sync.dto.owncloud.SensorMLAncestors;
 
 /**
@@ -39,7 +39,6 @@ public class OwncloudDaoImpl implements IOwncloudDao {
     private static final String OM_INFO = "/ominfo/";
     private static final String OM_RESULT = "/omresult/";
     private static final String FILENAME_PARAMETER = "filename";
-    private static final String EXTENSIONS_PARAMETER = "exts";
     private static final String BASIC_HEADER = "Basic ";
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String ID_PARAMETER = "id";
@@ -47,31 +46,29 @@ public class OwncloudDaoImpl implements IOwncloudDao {
     private static final String TO_PARAMETER = "to";
     private static final String FROM_PARAMETER = "from";
     private static final String FILES_SERVICES = "/files";
-    private static final String FILES_FAILURE_SERVICES = "/files/failure";
+    private static final String FILES_FAILURE_SERVICES = "/lastfailure";
 
     @Override
-    public List<Activity> getActivities(Date from, Date to) {
+    public List<OwncloudSyncModel> getActivities(Date from, Date to) {
         URI uri = UriComponentsBuilder.fromHttpUrl(Config.owncloudEndpoint() + FILES_SERVICES)
                 // From
                 .queryParam(FROM_PARAMETER, from.getTime() / 1000)
                 // To
                 .queryParam(TO_PARAMETER, to.getTime() / 1000)
-                // Extensions
-                .queryParam(EXTENSIONS_PARAMETER, "xml")
                 // GetUri
                 .build().encode().toUri();
 
-        Activity[] activities = get(uri, Activity[].class, new GsonHttpMessageConverter());
+        OwncloudSyncModel[] activities = get(uri, OwncloudSyncModel[].class, new GsonHttpMessageConverter());
         return activities != null ? Arrays.asList(activities) : new ArrayList<>();
     }
 
     @Override
-    public List<Activity> getFailedActivities() {
+    public List<OwncloudSyncModel> getFailedActivities() {
         URI uri = UriComponentsBuilder.fromHttpUrl(Config.owncloudEndpoint() + FILES_FAILURE_SERVICES)
                 // GetUri
                 .build().encode().toUri();
 
-        Activity[] activities = get(uri, Activity[].class, new GsonHttpMessageConverter());
+        OwncloudSyncModel[] activities = get(uri, OwncloudSyncModel[].class, new GsonHttpMessageConverter());
         return activities != null ? Arrays.asList(activities) : new ArrayList<>();
     }
 
@@ -181,9 +178,7 @@ public class OwncloudDaoImpl implements IOwncloudDao {
     @Override
     public void updateIndexStatus(IndexStatus indexStatus) {
         URI uri = UriComponentsBuilder.fromHttpUrl(Config.owncloudEndpoint() + "/om").build().encode().toUri();
-        ResponseEntity<IndexStatusResponse> result = post(uri, new GsonHttpMessageConverter(), indexStatus,
-                IndexStatusResponse.class);
-        System.out.println(result.getBody());
+        post(uri, new GsonHttpMessageConverter(), indexStatus, IndexStatusResponse.class);
     }
 
 }

@@ -6,14 +6,17 @@ import javax.xml.bind.JAXBElement;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import fr.ifremer.sensornanny.sync.base.UnitTest;
 import fr.ifremer.sensornanny.sync.converter.XmlSensorMLDtoConverter;
 import fr.ifremer.sensornanny.sync.dto.model.Axis;
 import fr.ifremer.sensornanny.sync.dto.model.SensorML;
 import fr.ifremer.sensornanny.sync.parse.impl.SensorMLParser;
 import net.opengis.sensorml.v_2_0.PhysicalSystemType;
 
-public class SensorMLParserTest {
+@Category(UnitTest.class)
+public class SensorMLParserTest extends UnitTest {
 
     private SensorMLParser parser = new SensorMLParser();
 
@@ -42,7 +45,7 @@ public class SensorMLParserTest {
         Assert.assertEquals(2, sensorML.getComponents().size());
         Assert.assertEquals("http://ubisi54.ifremer.fr:8080/sensornanny/record/056cc4aa-d862-42b9-bd83-f537910405af",
                 sensorML.getComponents().get(0).getHref());
-        Assert.assertEquals("http://ubisi54.ifremer.fr:8080/sensornanny/record/056cc4aa-d862-42b9-bd83-f537910405af",
+        Assert.assertEquals("http://ubisi54.ifremer.fr:8080/sensornanny/record/6c6bf0c8-334d-48db-bda5-297b642a097b",
                 sensorML.getComponents().get(1).getHref());
         Assert.assertNull(sensorML.getTerms());
     }
@@ -73,7 +76,8 @@ public class SensorMLParserTest {
         String expectedName = "Borel";
         String expectedUuid = "f8ea62f1-277a-4fb6-bf19-0238ea8f8d54";
 
-        InputStream inputStream = SensorMLParserTest.class.getClassLoader().getResourceAsStream("momar/Borel.xml");
+        InputStream inputStream = SensorMLParserTest.class.getClassLoader().getResourceAsStream(
+                "momar/Borel_sensorML.xml");
         SensorML sensorML = converter.fromXML(parser.parse(inputStream));
 
         Assert.assertNotNull("sensorML must not be null", sensorML);
@@ -84,7 +88,7 @@ public class SensorMLParserTest {
         Assert.assertNull(sensorML.getTerms());
         Axis coordinate = sensorML.getCoordinate();
         Assert.assertNotNull("coordinates must not be null", coordinate);
-        Assert.assertEquals(37.302666, coordinate.getLat());
-        Assert.assertEquals(32.2765, coordinate.getLon());
+        Assert.assertEquals(37.302666, coordinate.getLon());
+        Assert.assertEquals(32.2765, coordinate.getLat());
     }
 }

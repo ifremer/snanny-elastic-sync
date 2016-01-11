@@ -4,13 +4,13 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 
-import fr.ifremer.sensornanny.sync.dto.owncloud.Activity;
 import fr.ifremer.sensornanny.sync.dto.owncloud.Content;
 import fr.ifremer.sensornanny.sync.dto.owncloud.FileSizeInfo;
 import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatus;
+import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
 
 /**
- * Interface owncloud
+ * Owncloud interface for data-access
  * 
  * @author athorel
  *
@@ -22,16 +22,16 @@ public interface IOwncloudDao {
      * 
      * @param from the query start time
      * @param to the query end time
-     * @return map containing each activity (creation, modification, deletion) for a file
+     * @return list containing files created/edited/deleted/shared/unshared between the two dates
      */
-    List<Activity> getActivities(Date from, Date to);
+    List<OwncloudSyncModel> getActivities(Date from, Date to);
 
     /**
      * Retrieve the last failures items
      * 
-     * @return map containing each activity (creation, modification, deletion) for a file
+     * @return list containing each O&M files which failed during the last synchronisation
      */
-    List<Activity> getFailedActivities();
+    List<OwncloudSyncModel> getFailedActivities();
 
     /**
      * Retrieve content form id
@@ -74,10 +74,9 @@ public interface IOwncloudDao {
     List<String> getAncestors(String uuid);
 
     /**
-     * Update indexation status
+     * Update indexation status to owncloud as feedback information to the owncloud user
      * 
-     * @param idOM identifier of the OM
-     * @param indexStatus index statuso
+     * @param indexStatus index status
      */
     void updateIndexStatus(IndexStatus indexStatus);
 }

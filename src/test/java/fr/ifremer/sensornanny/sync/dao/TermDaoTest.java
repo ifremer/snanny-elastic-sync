@@ -2,11 +2,14 @@ package fr.ifremer.sensornanny.sync.dao;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import fr.ifremer.sensornanny.sync.base.IntegrationTest;
 import fr.ifremer.sensornanny.sync.base.UnitTest;
 import fr.ifremer.sensornanny.sync.dao.impl.TermDaoImpl;
 import fr.ifremer.sensornanny.sync.dto.model.Term;
 
+@Category(IntegrationTest.class)
 public class TermDaoTest extends UnitTest {
 
     public ITermDao dao = new TermDaoImpl();

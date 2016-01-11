@@ -121,14 +121,19 @@ public final class Config {
     }
 
     /**
-     * Service de récupération des sml
+     * Service endpoint to retrieve sml informations
      * 
-     * @return contenu SML
+     * @return service endpoint
      */
     public static String smlEndpoint() {
         return get("sml.endpoint");
     }
 
+    /**
+     * Service endpoint to retrieve tematres informations
+     * 
+     * @return service endpoint
+     */
     public static String tematresEndpoint() {
         return get("tematres.endpoint");
     }

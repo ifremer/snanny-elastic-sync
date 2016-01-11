@@ -15,6 +15,12 @@ import net.opengis.gml.v_3_2_1.TimeInstantType;
 import net.opengis.gml.v_3_2_1.TimePeriodType;
 import net.opengis.gml.v_3_2_1.TimePositionType;
 
+/**
+ * Converter of AbstractTimeObjectType to date list
+ * 
+ * @author athorel
+ *
+ */
 public class XmlTimePeriodDateConverter {
 
     public List<Date> convertToDates(JAXBElement<AbstractTimeObjectType> timeObject, TypeType type) {

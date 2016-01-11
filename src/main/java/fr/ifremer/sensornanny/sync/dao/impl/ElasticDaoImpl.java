@@ -3,11 +3,14 @@ package fr.ifremer.sensornanny.sync.dao.impl;
 import java.lang.reflect.Type;
 import java.util.Date;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.Scroll;
@@ -33,6 +36,7 @@ import fr.ifremer.sensornanny.sync.manager.NodeManager;
  */
 public class ElasticDaoImpl implements IElasticDao {
 
+    private static final Logger LOGGER = Logger.getLogger(ElasticDaoImpl.class.getName());
     private static final int NUMBER_OF_ITEMS_PER_DELETION = 10000;
     private static final String WILDCARDS = "*";
     private static final String SNANNY_UUID = "snanny-uuid";
@@ -91,7 +95,11 @@ public class ElasticDaoImpl implements IElasticDao {
 
             getClient().update(updateRequest).get();
             return true;
+        } catch (NoNodeAvailableException e) {
+            LOGGER.log(Level.SEVERE, "ElasticSearch is not listening", e);
+            return false;
         } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "entry " + uuid + " won't be write in elasticsearch", e);
             return false;
         }
     }

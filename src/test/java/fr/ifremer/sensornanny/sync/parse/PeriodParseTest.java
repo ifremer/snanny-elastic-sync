@@ -5,9 +5,11 @@ import java.time.Instant;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import fr.ifremer.sensornanny.sync.base.UnitTest;
 
+@Category(UnitTest.class)
 public class PeriodParseTest extends UnitTest {
 
     @Test
@@ -29,7 +31,6 @@ public class PeriodParseTest extends UnitTest {
         Instant result = (Instant) fiveDays.subtractFrom(today);
 
         Instant resultReal = today.minusSeconds(realPeriod);
-        System.out.println(result);
-        System.out.println(resultReal);
+        Assert.assertEquals(resultReal, result);
     }
 }

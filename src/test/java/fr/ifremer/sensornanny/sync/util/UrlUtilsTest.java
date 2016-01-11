@@ -3,7 +3,9 @@ package fr.ifremer.sensornanny.sync.util;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class UrlUtilsTest {
+import fr.ifremer.sensornanny.sync.base.UnitTest;
+
+public class UrlUtilsTest extends UnitTest {
 
     @Test
     public void testUriParse() {

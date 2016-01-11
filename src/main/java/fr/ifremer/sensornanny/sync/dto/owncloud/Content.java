@@ -1,11 +1,14 @@
 package fr.ifremer.sensornanny.sync.dto.owncloud;
 
+import java.util.List;
+
 public class Content {
 
     private String path;
     private String user;
     private String[] parent;
     private String content;
+    private List<Share> shares;
 
     public String getPath() {
         return path;
@@ -37,6 +40,14 @@ public class Content {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public List<Share> getShares() {
+        return shares;
+    }
+
+    public void setShares(List<Share> shares) {
+        this.shares = shares;
     }
 
 }

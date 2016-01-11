@@ -48,6 +48,9 @@ public class ObservationJson {
     @SerializedName("snanny-depth")
     private Number depth;
 
+    @SerializedName("snanny-access")
+    private Permission permission;
+
     public String getUuid() {
         return uuid;
     }
@@ -134,6 +137,14 @@ public class ObservationJson {
 
     public void setDepth(Number depth) {
         this.depth = depth;
+    }
+
+    public Permission getPermission() {
+        return permission;
+    }
+
+    public void setPermission(Permission permission) {
+        this.permission = permission;
     }
 
     @Override

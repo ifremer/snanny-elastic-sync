@@ -1,6 +1,6 @@
 package fr.ifremer.sensornanny.sync.processor;
 
-import fr.ifremer.sensornanny.sync.dto.owncloud.FileInfo;
+import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
 
 /**
  * Delegate processor of elastic processors
@@ -14,7 +14,6 @@ public interface IDelegateProcessor {
      * Execute the treatment of the file
      * 
      * @param fileInfo file to handle
-     * @param isDeleted <code>true</code> if the file is deleted otherwise <code>false</code>
      */
-    void execute(FileInfo fileInfo, boolean isDeleted);
+    void execute(OwncloudSyncModel model);
 }

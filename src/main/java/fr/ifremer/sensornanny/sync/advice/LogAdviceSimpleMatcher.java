@@ -15,6 +15,9 @@ public class LogAdviceSimpleMatcher extends AbstractMatcher<Method> implements S
 
     @Override
     public boolean matches(Method t) {
+        if (t.isSynthetic()) {
+            return false;
+        }
         int modifiers = t.getModifiers();
         if (Modifier.isStatic(modifiers)) {
             return false;

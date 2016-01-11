@@ -2,11 +2,9 @@ package fr.ifremer.sensornanny.sync.reader;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
-import fr.ifremer.sensornanny.sync.dto.owncloud.Activity;
 import fr.ifremer.sensornanny.sync.dto.owncloud.Content;
-import fr.ifremer.sensornanny.sync.dto.owncloud.FileInfo;
+import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
 
 public interface IOwncloudReader {
 
@@ -17,14 +15,14 @@ public interface IOwncloudReader {
      * @param to the query end time
      * @return map containing each activity (creation, modification, deletion) for a file
      */
-    Map<FileInfo, List<Activity>> getActivities(Date from, Date to);
+    List<OwncloudSyncModel> getActivities(Date from, Date to);
 
     /**
      * Retrieve the files which failed during the last sync
      * 
      * @return map containing each activity for a file
      */
-    Map<FileInfo, List<Activity>> getFailedSyncActivities();
+    List<OwncloudSyncModel> getFailedSyncActivities();
 
     /**
      * Retrieve content form id

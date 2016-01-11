@@ -21,13 +21,13 @@ public class ObservationDataManager {
     public static final int ONE_MEGA_OCTECT_IN_OCTET = 1000000;
 
     @Inject
-    MomarObservationParser momarParser;
+    private MomarObservationParser momarParser;
 
     @Inject
-    NetCdfObservationParser netCdfParser;
+    private NetCdfObservationParser netCdfParser;
 
     @Inject
-    IOwncloudDao owncloudDao;
+    private IOwncloudDao owncloudDao;
 
     private Semaphore semaphore = new Semaphore(Config.maxMemory());
 

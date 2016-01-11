@@ -11,8 +11,9 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.geogrid.GeoHashGridBuilder;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-import fr.ifremer.sensornanny.sync.base.UnitTest;
+import fr.ifremer.sensornanny.sync.base.IntegrationTest;
 import fr.ifremer.sensornanny.sync.config.Config;
 import fr.ifremer.sensornanny.sync.dao.impl.ElasticDaoImpl;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.Ancestor;
@@ -20,7 +21,8 @@ import fr.ifremer.sensornanny.sync.dto.elasticsearch.Coordinates;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.ObservationJson;
 import fr.ifremer.sensornanny.sync.manager.NodeManager;
 
-public class ElasticDaoTest extends UnitTest {
+@Category(IntegrationTest.class)
+public class ElasticDaoTest extends IntegrationTest {
 
     public IElasticDao dao = new ElasticDaoImpl();
 

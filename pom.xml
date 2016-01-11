@@ -35,6 +35,12 @@
 		<java.version>1.8</java.version>
 
 
+		<!-- Plugins versions -->
+		<maven.compiler.version>2.5.1</maven.compiler.version>
+		<maven.eclipse.version>2.8</maven.eclipse.version>
+		<maven.shade.version>2.4.2</maven.shade.version>
+		<maven.surefire.version>2.15</maven.surefire.version>
+
 	</properties>
 
 	<repositories>
@@ -48,10 +54,22 @@
 	<build>
 		<finalName>elastic-sync</finalName>
 		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven.surefire.version}</version>
+				<configuration>
+					<groups>
+						fr.ifremer.sensornanny.sync.base.UnitTest,
+					</groups>
+				</configuration>
+			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.5.1</version>
+				<version>${maven.compiler.version}</version>
 				<inherited>true</inherited>
 				<configuration>
 					<source>${java.version}</source>
@@ -61,7 +79,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-eclipse-plugin</artifactId>
-				<version>2.8</version>
+				<version>${maven.eclipse.version}</version>
 				<configuration>
 					<downloadSources>true</downloadSources>
 					<downloadJavadocs>true</downloadJavadocs>
@@ -70,7 +88,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.4.2</version>
+				<version>${maven.shade.version}</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -185,6 +203,13 @@
 			<groupId>edu.ucar</groupId>
 			<artifactId>netcdf4</artifactId>
 			<version>${netcdf.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>edu.ucar</groupId>
+			<artifactId>cdm</artifactId>
+			<version>${netcdf.version}</version>
+			<scope>compile</scope>
 		</dependency>
 
 

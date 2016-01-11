@@ -7,6 +7,8 @@ import fr.ifremer.sensornanny.sync.advice.LogAdvice;
 import fr.ifremer.sensornanny.sync.advice.LogAdviceSimpleMatcher;
 import fr.ifremer.sensornanny.sync.cache.impl.SensorMLCacheManager;
 import fr.ifremer.sensornanny.sync.cache.impl.TermCacheManager;
+import fr.ifremer.sensornanny.sync.converter.AbstractXMLConverter;
+import fr.ifremer.sensornanny.sync.converter.PermissionsConverter;
 import fr.ifremer.sensornanny.sync.converter.XmlOMDtoConverter;
 import fr.ifremer.sensornanny.sync.converter.XmlSensorMLDtoConverter;
 import fr.ifremer.sensornanny.sync.converter.XmlTimePeriodDateConverter;
@@ -51,7 +53,8 @@ public class ElasticSyncModule extends AbstractModule {
         bind(ObservationDataManager.class);
 
         // AOP
-        bindInterceptor(Matchers.any(), new LogAdviceSimpleMatcher(), new LogAdvice());
+        bindInterceptor(Matchers.not(Matchers.inPackage(AbstractXMLConverter.class.getPackage())),
+                new LogAdviceSimpleMatcher(), new LogAdvice());
 
         // Parsers
         bind(OMParser.class);
@@ -61,6 +64,7 @@ public class ElasticSyncModule extends AbstractModule {
         bind(XmlOMDtoConverter.class);
         bind(XmlTimePeriodDateConverter.class);
         bind(XmlSensorMLDtoConverter.class);
+        bind(PermissionsConverter.class);
 
         // CacheManager
         bind(SensorMLCacheManager.class);

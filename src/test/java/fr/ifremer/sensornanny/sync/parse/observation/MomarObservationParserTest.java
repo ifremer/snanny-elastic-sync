@@ -4,11 +4,14 @@ import java.io.InputStream;
 import java.util.function.Consumer;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import fr.ifremer.sensornanny.sync.base.UnitTest;
 import fr.ifremer.sensornanny.sync.dto.model.TimePosition;
 import fr.ifremer.sensornanny.sync.parse.observations.impl.MomarObservationParser;
 
-public class MomarObservationParserTest {
+@Category(UnitTest.class)
+public class MomarObservationParserTest extends UnitTest {
 
     private MomarObservationParser parser = new MomarObservationParser();
 
@@ -19,7 +22,7 @@ public class MomarObservationParserTest {
 
             @Override
             public void accept(TimePosition t) {
-                System.out.println(t);
+                org.junit.Assert.assertNotNull(t);
             }
         });
     }

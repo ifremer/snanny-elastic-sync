@@ -23,10 +23,16 @@ import net.opengis.om.v_2_0.TimeObjectPropertyType;
 import net.opengis.sos.v_2_0.InsertObservationType;
 import net.opengis.sos.v_2_0.InsertObservationType.Observation;
 
+/**
+ * Extracteur of Jaxb O&M to flat object
+ * 
+ * @author athorel
+ *
+ */
 public class XmlOMDtoConverter extends AbstractXMLConverter {
 
     @Inject
-    private XmlTimePeriodDateConverter timeConverter;
+    protected XmlTimePeriodDateConverter timeConverter;
 
     public List<OM> fromXML(JAXBElement<InsertObservationType> xml) {
         List<OM> result = new ArrayList<>();

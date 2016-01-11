@@ -13,13 +13,16 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import fr.ifremer.sensornanny.sync.base.IntegrationTest;
 import fr.ifremer.sensornanny.sync.base.UnitTest;
 import fr.ifremer.sensornanny.sync.dao.impl.OwncloudDaoImpl;
-import fr.ifremer.sensornanny.sync.dto.owncloud.Activity;
 import fr.ifremer.sensornanny.sync.dto.owncloud.Content;
 import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatus;
+import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
 
+@Category(IntegrationTest.class)
 public class OwncloudDaoTest extends UnitTest {
 
     public OwncloudDaoImpl dao = new OwncloudDaoImpl();
@@ -30,8 +33,8 @@ public class OwncloudDaoTest extends UnitTest {
         Date to = instance.getTime();
         instance.add(Calendar.MONTH, -2);
 
-        List<Activity> result = dao.getActivities(instance.getTime(), to);
-        for (Activity activity : result) {
+        List<OwncloudSyncModel> result = dao.getActivities(instance.getTime(), to);
+        for (OwncloudSyncModel activity : result) {
             System.out.println(activity);
         }
     }
@@ -42,15 +45,16 @@ public class OwncloudDaoTest extends UnitTest {
         Date to = instance.getTime();
         instance.add(Calendar.DAY_OF_MONTH, -2);
 
-        List<Activity> result = dao.getActivities(instance.getTime(), to);
-        for (Activity activity : result) {
+        List<OwncloudSyncModel> result = dao.getActivities(instance.getTime(), to);
+        for (OwncloudSyncModel activity : result) {
             System.out.println(activity);
         }
     }
 
     @Test
     public void testGetContent() {
-        Content result = dao.getContent(33L);
+        Content result = dao.getContent(943L);
+        System.out.println(result.getShares());
         System.out.println(result.getPath());
     }
 

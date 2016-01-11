@@ -76,4 +76,10 @@ public class IndexStatus {
         indexedObservations++;
     }
 
+    @Override
+    public String toString() {
+        return "IndexStatus [fileId=" + fileId + ", uuid=" + uuid + ", status=" + status + ", message=" + message
+                + ", indexedObservations=" + indexedObservations + "]";
+    }
+
 }

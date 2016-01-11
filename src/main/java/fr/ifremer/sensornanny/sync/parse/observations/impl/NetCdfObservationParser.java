@@ -50,8 +50,7 @@ public class NetCdfObservationParser implements IObservationParser<TimePosition>
             }
 
         } catch (Exception e) {
-            // LOGGER.error(e.getMessage(), e);
-            e.printStackTrace();
+            // Nothing to do
         } finally {
             closeQuietly(cdfFile);
         }

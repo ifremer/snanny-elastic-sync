@@ -5,11 +5,10 @@ import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.cli.CommandLine;
@@ -19,17 +18,19 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.elasticsearch.action.exists.ExistsRequestBuilder;
 import org.elasticsearch.common.util.concurrent.ThreadFactoryBuilder;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import fr.ifremer.sensornanny.sync.config.Config;
-import fr.ifremer.sensornanny.sync.dto.owncloud.Activity;
-import fr.ifremer.sensornanny.sync.dto.owncloud.FileInfo;
+import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
+import fr.ifremer.sensornanny.sync.manager.NodeManager;
 import fr.ifremer.sensornanny.sync.processor.IElasticProcessor;
 import fr.ifremer.sensornanny.sync.reader.FifoReader;
 import fr.ifremer.sensornanny.sync.reader.IOwncloudReader;
+import fr.ifremer.sensornanny.sync.report.ReportManager;
 import fr.ifremer.sensornanny.sync.util.DateUtils;
 
 public class Main {
@@ -83,6 +84,7 @@ public class Main {
                         break;
                     case RELAUNCH_FAILURES:
                         executeWithOptionFailure();
+                        break;
                     default:
                         showHelp(options);
                         break;
@@ -92,6 +94,8 @@ public class Main {
         } catch (ParseException e) {
             showHelp(options);
         }
+
+        NodeManager.destroy();
         System.exit(0);
     }
 
@@ -115,12 +119,12 @@ public class Main {
         LOGGER.info(String.format("Sync Failed sync Owncloud files"));
 
         IOwncloudReader owncloudReader = injector.getInstance(IOwncloudReader.class);
-        Map<FileInfo, List<Activity>> activities = owncloudReader.getFailedSyncActivities();
+        List<OwncloudSyncModel> activities = owncloudReader.getFailedSyncActivities();
 
         executeSynchronization(activities);
 
         long timeTook = (System.currentTimeMillis() - time) / 1000;
-        LOGGER.info(String.format("Sync %d files modified, Time %ds", activities.size(), timeTook));
+        LOGGER.info(String.format("Time %ds", activities.size(), timeTook));
     }
 
     private static void executeWithOptionRange(Option option) throws ParseException {
@@ -143,7 +147,7 @@ public class Main {
         LOGGER.info(String.format("Sync Owncloud files modified between %s and %s", from, to));
 
         IOwncloudReader owncloudReader = injector.getInstance(IOwncloudReader.class);
-        Map<FileInfo, List<Activity>> activities = owncloudReader.getActivities(from, to);
+        List<OwncloudSyncModel> activities = owncloudReader.getActivities(from, to);
 
         executeSynchronization(activities);
 
@@ -151,28 +155,40 @@ public class Main {
         LOGGER.info(String.format("Sync %d files modified, Time %ds", activities.size(), timeTook));
     }
 
-    private static void executeSynchronization(Map<FileInfo, List<Activity>> activities) {
+    private static void executeSynchronization(List<OwncloudSyncModel> activities) {
+        ReportManager.log(String.format("Synchronize files : %d O&M to sync", activities.size()));
         LOGGER.info(String.format("%d files to synchronize ", activities.size()));
-        if (activities.size() > 0) {
-            FifoReader fifoReader = new FifoReader(activities.entrySet().iterator());
+        // Ensure node manager is ok
+        try {
+            if (activities.size() > 0) {
+                FifoReader fifoReader = new FifoReader(activities.iterator());
 
-            LOGGER.info(String.format("Start %d executors", Config.threadNumbers()));
-            ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("T-%d").build();
-            ExecutorService executors = Executors.newFixedThreadPool(Config.threadNumbers(), namedThreadFactory);
-            Entry<FileInfo, List<Activity>> read;
-            IElasticProcessor processor = injector.getInstance(IElasticProcessor.class);
-            while ((read = fifoReader.read()) != null) {
-                executors.execute(processor.of(read.getKey(), read.getValue()));
-            }
-            executors.shutdown();
-            while (!executors.isTerminated()) {
-                try {
-                    Thread.sleep(1000L);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                new ExistsRequestBuilder(NodeManager.getInstance().getClient()).setIndices(Config.observationsIndex())
+                        .get();
+
+                LOGGER.info(String.format("Start %d executors", Config.threadNumbers()));
+                ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("T-%d").build();
+                ExecutorService executors = Executors.newFixedThreadPool(Config.threadNumbers(), namedThreadFactory);
+                OwncloudSyncModel read;
+                IElasticProcessor processor = injector.getInstance(IElasticProcessor.class);
+                while ((read = fifoReader.read()) != null) {
+                    executors.execute(processor.of(read));
+                }
+                executors.shutdown();
+                while (!executors.isTerminated()) {
+                    try {
+                        Thread.sleep(1000L);
+                    } catch (InterruptedException e) {
+                        LOGGER.log(Level.WARNING, e.getMessage(), e);
+                    }
                 }
             }
+        } catch (Exception e) {
+            ReportManager.err("ElasticSearch is not listening", e);
+            LOGGER.log(Level.SEVERE, "ElasticSearch is not listening", e);
         }
+        ReportManager.log("End of sync");
+        ReportManager.release();
     }
 
 }

@@ -6,12 +6,16 @@ import java.util.function.Consumer;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
 import org.easymock.Mock;
+import org.easymock.MockType;
 import org.easymock.TestSubject;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import fr.ifremer.sensornanny.sync.base.MockTest;
+import fr.ifremer.sensornanny.sync.base.UnitTest;
 import fr.ifremer.sensornanny.sync.config.Config;
+import fr.ifremer.sensornanny.sync.converter.PermissionsConverter;
 import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
 import fr.ifremer.sensornanny.sync.dto.model.OMResult;
 import fr.ifremer.sensornanny.sync.dto.model.TimePosition;
@@ -19,6 +23,7 @@ import fr.ifremer.sensornanny.sync.dto.owncloud.FileSizeInfo;
 import fr.ifremer.sensornanny.sync.parse.observations.impl.MomarObservationParser;
 import fr.ifremer.sensornanny.sync.parse.observations.impl.NetCdfObservationParser;
 
+@Category(UnitTest.class)
 public class ObservationDataManagerTest extends MockTest {
 
     @TestSubject
@@ -29,6 +34,9 @@ public class ObservationDataManagerTest extends MockTest {
 
     @Mock
     NetCdfObservationParser netCdfParser;
+
+    @Mock(type = MockType.NICE)
+    PermissionsConverter permissionConverter;
 
     @Mock
     IOwncloudDao owncloudDao;

@@ -7,11 +7,14 @@ import java.util.function.Consumer;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import fr.ifremer.sensornanny.sync.base.UnitTest;
 import fr.ifremer.sensornanny.sync.dto.model.TimePosition;
 import fr.ifremer.sensornanny.sync.parse.observations.impl.NetCdfObservationParser;
 
-public class NetCDFObservationParserTest {
+@Category(UnitTest.class)
+public class NetCDFObservationParserTest extends UnitTest {
 
     private NetCdfObservationParser parser = new NetCdfObservationParser();
 
