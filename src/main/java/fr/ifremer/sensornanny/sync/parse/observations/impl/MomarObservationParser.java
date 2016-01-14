@@ -24,8 +24,8 @@ import fr.ifremer.sensornanny.sync.util.DateUtils;
 public class MomarObservationParser implements IObservationParser<TimePosition> {
 
     private static final String ACCEPTED_FORMAT = "txt/csv";
-    private static final int LON_INDEX = 3;
-    private static final int LAT_INDEX = 2;
+    private static final int LON_INDEX = 2;
+    private static final int LAT_INDEX = 3;
     private static final int DATE_INDEX = 1;
 
     @Override

@@ -207,24 +207,31 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
             if (CollectionUtils.isNotEmpty(parentAncestors)) {
                 for (String parentAncestor : parentAncestors) {
                     SensorML compSensorML = cacheSystem.getData(parentAncestor);
-                    Ancestor ancestor = new Ancestor();
-                    ancestor.setUuid(compSensorML.getUuid());
-                    ancestor.setDescription(compSensorML.getDescription());
-                    ancestor.setName(compSensorML.getName());
-                    ancestor.setTerms(getTerms(compSensorML.getTerms()));
-                    ancestor.setKeywords(compSensorML.getKeywords());
-                    systemAncestors.add(ancestor);
+                    LOGGER.info("get sensorML ancestor : " + parentAncestor);
+                    if (compSensorML != null) {
+                        Ancestor ancestor = new Ancestor();
+                        ancestor.setUuid(compSensorML.getUuid());
+                        ancestor.setDescription(compSensorML.getDescription());
+                        ancestor.setName(compSensorML.getName());
+                        ancestor.setTerms(getTerms(compSensorML.getTerms()));
+                        ancestor.setKeywords(compSensorML.getKeywords());
+                        systemAncestors.add(ancestor);
+                    } else {
+                        LOGGER.warning("Unable to get sensorML ancestor : " + parentAncestor);
+                    }
                 }
             }
             // Get the data from direct ancestor
             SensorML system = cacheSystem.getData(systemUuid);
-            Ancestor ancestor = new Ancestor();
-            ancestor.setUuid(systemUuid);
-            ancestor.setDescription(system.getDescription());
-            ancestor.setName(system.getName());
-            ancestor.setTerms(getTerms(system.getTerms()));
-            ancestor.setKeywords(system.getKeywords());
-            systemAncestors.add(ancestor);
+            if (system != null) {
+                Ancestor ancestor = new Ancestor();
+                ancestor.setUuid(systemUuid);
+                ancestor.setDescription(system.getDescription());
+                ancestor.setName(system.getName());
+                ancestor.setTerms(getTerms(system.getTerms()));
+                ancestor.setKeywords(system.getKeywords());
+                systemAncestors.add(ancestor);
+            }
         }
         return systemAncestors;
     }

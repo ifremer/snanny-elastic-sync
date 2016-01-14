@@ -6,7 +6,6 @@ import javax.xml.bind.JAXBElement;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import fr.ifremer.sensornanny.sync.base.UnitTest;
 import fr.ifremer.sensornanny.sync.converter.XmlSensorMLDtoConverter;
@@ -15,7 +14,6 @@ import fr.ifremer.sensornanny.sync.dto.model.SensorML;
 import fr.ifremer.sensornanny.sync.parse.impl.SensorMLParser;
 import net.opengis.sensorml.v_2_0.PhysicalSystemType;
 
-@Category(UnitTest.class)
 public class SensorMLParserTest extends UnitTest {
 
     private SensorMLParser parser = new SensorMLParser();
@@ -28,13 +26,11 @@ public class SensorMLParserTest extends UnitTest {
         String expectedDesc = "ATALANTE IFREMER Research Vessel operated by GENAVIR";
         String expectedName = "ATALANTE";
 
-        InputStream inputStream = SensorMLParserTest.class.getClassLoader().getResourceAsStream(
-                "sensorML/atalante_sensorML.xml");
+        InputStream inputStream = load("sensorML/atalante_sensorML.xml");
         JAXBElement<PhysicalSystemType> element = parser.parse(inputStream);
         Assert.assertNotNull("element must not be null", element);
 
         Assert.assertEquals(expectedDesc, element.getValue().getDescription().getValue());
-
         Assert.assertEquals(expectedName, element.getValue().getName().get(0).getValue());
 
         SensorML sensorML = converter.fromXML(element);
@@ -57,8 +53,7 @@ public class SensorMLParserTest extends UnitTest {
         String expectedName = "integrated navigation system";
         String expectedUuid = "6c6bf0c8-334d-48db-bda5-297b642a097b";
 
-        InputStream inputStream = SensorMLParserTest.class.getClassLoader().getResourceAsStream(
-                "sensorML/atalante_cinna_sensorML.xml");
+        InputStream inputStream = load("sensorML/atalante_cinna_sensorML.xml");
         SensorML sensorML = converter.fromXML(parser.parse(inputStream));
 
         Assert.assertNotNull("sensorML must not be null", sensorML);
@@ -76,8 +71,7 @@ public class SensorMLParserTest extends UnitTest {
         String expectedName = "Borel";
         String expectedUuid = "f8ea62f1-277a-4fb6-bf19-0238ea8f8d54";
 
-        InputStream inputStream = SensorMLParserTest.class.getClassLoader().getResourceAsStream(
-                "momar/Borel_sensorML.xml");
+        InputStream inputStream = load("momar/Borel_sensorML.xml");
         SensorML sensorML = converter.fromXML(parser.parse(inputStream));
 
         Assert.assertNotNull("sensorML must not be null", sensorML);
@@ -91,4 +85,24 @@ public class SensorMLParserTest extends UnitTest {
         Assert.assertEquals(37.302666, coordinate.getLon());
         Assert.assertEquals(32.2765, coordinate.getLat());
     }
+
+    @Test
+    public void testParseSuroit() throws Exception {
+
+        String expectedDesc = "SUROIT, IFREMER Reaserch Vessel operated by GENAVIR";
+        String expectedName = "SUROIT";
+        String expectedUuid = "4274f822-4d98-412b-a767-f97130ab8fd5";
+
+        String file = "sensorML/suroit_sensorML.xml";
+        InputStream inputStream = load(file);
+        SensorML sensorML = converter.fromXML(parser.parse(inputStream));
+
+        Assert.assertNotNull("sensorML must not be null", sensorML);
+        Assert.assertEquals(expectedUuid, sensorML.getUuid());
+        Assert.assertEquals(expectedDesc, sensorML.getDescription());
+        Assert.assertEquals(expectedName, sensorML.getName());
+        Assert.assertEquals(2, sensorML.getComponents().size());
+        Assert.assertNull(sensorML.getTerms());
+    }
+
 }

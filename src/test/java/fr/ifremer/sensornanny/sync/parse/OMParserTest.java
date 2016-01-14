@@ -8,7 +8,6 @@ import javax.xml.bind.JAXBElement;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -23,7 +22,6 @@ import net.opengis.om.v_2_0.OMObservationType;
 import net.opengis.sos.v_2_0.InsertObservationType;
 import net.opengis.sos.v_2_0.InsertObservationType.Observation;
 
-@Category(UnitTest.class)
 public class OMParserTest extends UnitTest {
 
     private OMParser parser = new OMParser();
@@ -39,8 +37,7 @@ public class OMParserTest extends UnitTest {
     @Test
     public void testParseFile() throws Exception {
 
-        InputStream inputStream = OMParserTest.class.getClassLoader().getResourceAsStream(
-                "observation/292d9bd6-815c-11e4-a9c3-5c260a184584.xml");
+        InputStream inputStream = load("observation/292d9bd6-815c-11e4-a9c3-5c260a184584.xml");
         JAXBElement<InsertObservationType> element = parser.parse(inputStream);
         Assert.assertNotNull("element must not be null", element);
 

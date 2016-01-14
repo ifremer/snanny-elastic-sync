@@ -20,6 +20,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import fr.ifremer.sensornanny.sync.config.Config;
 import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
+import fr.ifremer.sensornanny.sync.dao.rest.OwncloudRestErrorHandler;
 import fr.ifremer.sensornanny.sync.dto.owncloud.Content;
 import fr.ifremer.sensornanny.sync.dto.owncloud.FileSizeInfo;
 import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatus;
@@ -58,7 +59,7 @@ public class OwncloudDaoImpl implements IOwncloudDao {
                 // GetUri
                 .build().encode().toUri();
 
-        OwncloudSyncModel[] activities = get(uri, OwncloudSyncModel[].class, new GsonHttpMessageConverter());
+        OwncloudSyncModel[] activities = get(uri, OwncloudSyncModel[].class, new GsonHttpMessageConverter(), null);
         return activities != null ? Arrays.asList(activities) : new ArrayList<>();
     }
 
@@ -68,7 +69,7 @@ public class OwncloudDaoImpl implements IOwncloudDao {
                 // GetUri
                 .build().encode().toUri();
 
-        OwncloudSyncModel[] activities = get(uri, OwncloudSyncModel[].class, new GsonHttpMessageConverter());
+        OwncloudSyncModel[] activities = get(uri, OwncloudSyncModel[].class, new GsonHttpMessageConverter(), null);
         return activities != null ? Arrays.asList(activities) : new ArrayList<>();
     }
 
@@ -81,7 +82,7 @@ public class OwncloudDaoImpl implements IOwncloudDao {
                 // GetUri
                 .build().encode().toUri();
 
-        return get(uri, Content.class, new GsonHttpMessageConverter());
+        return get(uri, Content.class, new GsonHttpMessageConverter(), null);
     }
 
     /**
@@ -91,8 +92,12 @@ public class OwncloudDaoImpl implements IOwncloudDao {
      * @param clazz returned class
      * @return result of the get action
      */
-    private <T> T get(URI uri, Class<T> clazz, HttpMessageConverter<?> converter) {
+    private <T> T get(URI uri, Class<T> clazz, HttpMessageConverter<?> converter, String resourceName) {
         RestTemplate template = init(converter);
+        if (resourceName != null) {
+            template.setErrorHandler(OwncloudRestErrorHandler.of(resourceName));
+        }
+
         ResponseEntity<T> response = template.exchange(uri, HttpMethod.GET, createEntity(), clazz);
 
         return response.getBody();
@@ -138,7 +143,7 @@ public class OwncloudDaoImpl implements IOwncloudDao {
     @Override
     public String getSML(String uuid) {
         URI uri = UriComponentsBuilder.fromHttpUrl(Config.smlEndpoint() + uuid).build().encode().toUri();
-        return get(uri, String.class, null);
+        return get(uri, String.class, null, "SML " + uri.toString());
     }
 
     @Override
@@ -165,13 +170,14 @@ public class OwncloudDaoImpl implements IOwncloudDao {
                 // GetUri
                 .build().encode().toUri();
 
-        return get(uri, FileSizeInfo.class, new GsonHttpMessageConverter());
+        return get(uri, FileSizeInfo.class, new GsonHttpMessageConverter(), null);
     }
 
     @Override
     public List<String> getAncestors(String uuid) {
         URI uri = UriComponentsBuilder.fromHttpUrl(Config.smlEndpoint() + uuid + ANCESTORS).build().encode().toUri();
-        SensorMLAncestors result = get(uri, SensorMLAncestors.class, new GsonHttpMessageConverter());
+        SensorMLAncestors result = get(uri, SensorMLAncestors.class, new GsonHttpMessageConverter(), "SML " + uri
+                .toString());
         return result.getAncestors();
     }
 

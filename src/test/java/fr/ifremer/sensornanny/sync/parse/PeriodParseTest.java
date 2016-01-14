@@ -5,11 +5,9 @@ import java.time.Instant;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import fr.ifremer.sensornanny.sync.base.UnitTest;
 
-@Category(UnitTest.class)
 public class PeriodParseTest extends UnitTest {
 
     @Test
