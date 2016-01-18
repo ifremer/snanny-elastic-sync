@@ -20,6 +20,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import fr.ifremer.sensornanny.sync.config.Config;
 import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
+import fr.ifremer.sensornanny.sync.dao.rest.DataNotFoundException;
 import fr.ifremer.sensornanny.sync.dao.rest.OwncloudRestErrorHandler;
 import fr.ifremer.sensornanny.sync.dto.owncloud.Content;
 import fr.ifremer.sensornanny.sync.dto.owncloud.FileSizeInfo;
@@ -147,7 +148,7 @@ public class OwncloudDaoImpl implements IOwncloudDao {
     }
 
     @Override
-    public InputStream getResultData(Long idOM, String resultFileName) {
+    public InputStream getResultData(Long idOM, String resultFileName) throws DataNotFoundException {
         URI uri = UriComponentsBuilder.fromHttpUrl(Config.owncloudEndpoint() + OM_RESULT + idOM).queryParam(
                 FILENAME_PARAMETER, resultFileName).build().encode().toUri();
         try {
@@ -156,8 +157,8 @@ public class OwncloudDaoImpl implements IOwncloudDao {
             return urlConnection.getInputStream();
         } catch (Exception e) {
             // Nothing todo
+            throw new DataNotFoundException("Unable to find file " + resultFileName, e);
         }
-        return null;
 
     }
 

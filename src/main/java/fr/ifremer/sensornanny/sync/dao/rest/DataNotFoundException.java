@@ -23,4 +23,13 @@ public class DataNotFoundException extends IOException {
     public DataNotFoundException(String message) {
         super(message);
     }
+
+    /**
+     * Declare a data not found exception
+     * 
+     * @param message name of the resource
+     */
+    public DataNotFoundException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

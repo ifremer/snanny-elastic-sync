@@ -73,9 +73,9 @@ public class XmlSensorMLDtoConverter extends AbstractXMLConverter {
                         case 3:
                             axis.setDep(Double.valueOf(split[2]));
                         case 2:
-                            axis.setLat(Double.valueOf(split[1]));
+                            axis.setLon(Double.valueOf(split[1]));
                         case 1:
-                            axis.setLon(Double.valueOf(split[0]));
+                            axis.setLat(Double.valueOf(split[0]));
                             break;
 
                     }

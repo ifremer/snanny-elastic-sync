@@ -17,6 +17,7 @@ import fr.ifremer.sensornanny.sync.base.UnitTest;
 import fr.ifremer.sensornanny.sync.config.Config;
 import fr.ifremer.sensornanny.sync.converter.PermissionsConverter;
 import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
+import fr.ifremer.sensornanny.sync.dao.rest.DataNotFoundException;
 import fr.ifremer.sensornanny.sync.dto.model.OMResult;
 import fr.ifremer.sensornanny.sync.dto.model.TimePosition;
 import fr.ifremer.sensornanny.sync.dto.owncloud.FileSizeInfo;
@@ -42,7 +43,7 @@ public class ObservationDataManagerTest extends MockTest {
     IOwncloudDao owncloudDao;
 
     @Test
-    public void testManagerIT() throws InterruptedException {
+    public void testManagerIT() throws InterruptedException, DataNotFoundException {
         Capture<Integer> capture = EasyMock.newCapture();
         OMResult omResult = new OMResult();
         omResult.setRole("application/netcdf");
@@ -97,7 +98,12 @@ public class ObservationDataManagerTest extends MockTest {
 
             @Override
             public void run() {
-                manager.readData(idOM, omResult, consumer);
+                try {
+                    manager.readData(idOM, omResult, consumer);
+                } catch (DataNotFoundException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
         });
         thread.start();
@@ -106,7 +112,7 @@ public class ObservationDataManagerTest extends MockTest {
     }
 
     @Test
-    public void testManagerWaitIT() throws InterruptedException {
+    public void testManagerWaitIT() throws InterruptedException, DataNotFoundException {
 
         Capture<Integer> capture = EasyMock.newCapture();
         OMResult omResult = new OMResult();
@@ -161,7 +167,12 @@ public class ObservationDataManagerTest extends MockTest {
 
             @Override
             public void run() {
-                manager.readData(idOM, omResult, consumer);
+                try {
+                    manager.readData(idOM, omResult, consumer);
+                } catch (DataNotFoundException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
         });
         thread.start();

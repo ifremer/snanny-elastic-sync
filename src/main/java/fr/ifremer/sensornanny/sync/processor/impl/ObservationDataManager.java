@@ -9,6 +9,7 @@ import com.google.inject.Inject;
 
 import fr.ifremer.sensornanny.sync.config.Config;
 import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
+import fr.ifremer.sensornanny.sync.dao.rest.DataNotFoundException;
 import fr.ifremer.sensornanny.sync.dto.model.OMResult;
 import fr.ifremer.sensornanny.sync.dto.model.TimePosition;
 import fr.ifremer.sensornanny.sync.dto.owncloud.FileSizeInfo;
@@ -31,7 +32,8 @@ public class ObservationDataManager {
 
     private Semaphore semaphore = new Semaphore(Config.maxMemory());
 
-    public void readData(Long omId, OMResult observationResult, Consumer<TimePosition> consumer) {
+    public void readData(Long omId, OMResult observationResult, Consumer<TimePosition> consumer)
+            throws DataNotFoundException {
         IObservationParser<TimePosition> parser = getParser(observationResult.getRole());
         if (parser == null) {
             return;
@@ -51,6 +53,8 @@ public class ObservationDataManager {
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
+            } catch (DataNotFoundException e) {
+                throw e;
             } finally {
                 release(permits);
             }

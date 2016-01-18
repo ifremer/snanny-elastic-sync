@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 
+import fr.ifremer.sensornanny.sync.dao.rest.DataNotFoundException;
 import fr.ifremer.sensornanny.sync.dto.owncloud.Content;
 import fr.ifremer.sensornanny.sync.dto.owncloud.FileSizeInfo;
 import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatus;
@@ -56,7 +57,7 @@ public interface IOwncloudDao {
      * @param resultFileName result file name expected
      * @return inputstream which allow to read element
      */
-    InputStream getResultData(Long idOM, String resultFileName);
+    InputStream getResultData(Long idOM, String resultFileName) throws DataNotFoundException;
 
     /**
      * Retrieve the file informations from an idOM and a resultfileName
