@@ -117,8 +117,9 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
 
             // Suppression de l'index
             for (OM observation : observations) {
-
                 indexStatus.setUuid(observation.getIdentifier());
+                // First delete observations
+                elasticWriter.delete(observation.getIdentifier());
                 // Get the procedure
                 String procedure = observation.getProcedure();
                 String systemUuid = new File(procedure).getName();
