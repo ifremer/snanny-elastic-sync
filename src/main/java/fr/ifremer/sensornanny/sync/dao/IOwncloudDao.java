@@ -37,10 +37,10 @@ public interface IOwncloudDao {
     /**
      * Retrieve content form id
      * 
-     * @param id identifier of the content
+     * @param uuid identifier of the content
      * @return content element
      */
-    Content getContent(Long id);
+    Content getOM(String uuid);
 
     /**
      * Retrieve the sml content from uuid
@@ -53,18 +53,18 @@ public interface IOwncloudDao {
     /**
      * Retrieve the result file from an OM
      * 
-     * @param idOM identifier of the OM
-     * @param resultFileName result file name expected
+     * @param uuid unique identifier of the OM
      * @return inputstream which allow to read element
      */
-    InputStream getResultData(Long idOM, String resultFileName) throws DataNotFoundException;
+    InputStream getResultData(String uuid) throws DataNotFoundException;
 
     /**
-     * Retrieve the file informations from an idOM and a resultfileName
+     * Retrieve the file informations from an uuid observations
      * 
+     * @param uuid unique identifier of the OM
      * @return file information containing filesize
      */
-    FileSizeInfo getFileSize(Long idOM, String resultFileName);
+    FileSizeInfo getResultFileSize(String uuid);
 
     /**
      * Retrieve the ancestors of a system

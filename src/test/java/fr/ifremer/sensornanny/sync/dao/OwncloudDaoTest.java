@@ -19,6 +19,7 @@ import fr.ifremer.sensornanny.sync.base.IntegrationTest;
 import fr.ifremer.sensornanny.sync.base.UnitTest;
 import fr.ifremer.sensornanny.sync.dao.impl.OwncloudDaoImpl;
 import fr.ifremer.sensornanny.sync.dto.owncloud.Content;
+import fr.ifremer.sensornanny.sync.dto.owncloud.FileSizeInfo;
 import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatus;
 import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
 
@@ -53,15 +54,16 @@ public class OwncloudDaoTest extends UnitTest {
 
     @Test
     public void testGetContent() {
-        Content result = dao.getContent(943L);
-        System.out.println(result.getShares());
-        System.out.println(result.getPath());
+        Content result = dao.getOM("53048b87-4225-4e92-8e87-c33a955c4928");
+        System.out.println(result.getContent());
     }
 
     @SuppressWarnings("resource")
     @Test
     public void testCSVParserGetContent() throws IOException {
-        InputStream result = dao.getResultData(670L, "turb2014.csv");
+        FileSizeInfo resultFileSize = dao.getResultFileSize("53048b87-4225-4e92-8e87-c33a955c4928");
+        System.out.println(resultFileSize.getFileName() + "  " + resultFileSize.getFileSize());
+        InputStream result = dao.getResultData("53048b87-4225-4e92-8e87-c33a955c4928");
         CSVParser csvParser = new CSVParser(new InputStreamReader(result), CSVFormat.DEFAULT);
         csvParser.forEach(new Consumer<CSVRecord>() {
 

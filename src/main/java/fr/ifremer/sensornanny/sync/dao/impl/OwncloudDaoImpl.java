@@ -37,14 +37,17 @@ import fr.ifremer.sensornanny.sync.dto.owncloud.SensorMLAncestors;
  */
 public class OwncloudDaoImpl implements IOwncloudDao {
 
+    // OM endpoint
+    private static final String OM_PATH = "/om/";
+
+    // Data endpoint
     private static final String ANCESTORS = "/ancestors";
-    private static final String OM_INFO = "/ominfo/";
-    private static final String OM_RESULT = "/omresult/";
-    private static final String FILENAME_PARAMETER = "filename";
+
+    // Auth
     private static final String BASIC_HEADER = "Basic ";
     private static final String AUTHORIZATION_HEADER = "Authorization";
-    private static final String ID_PARAMETER = "id";
-    private static final String CONTENT_SERVICES = "/content";
+
+    // Get informations from owncloud
     private static final String TO_PARAMETER = "to";
     private static final String FROM_PARAMETER = "from";
     private static final String FILES_SERVICES = "/files";
@@ -75,11 +78,11 @@ public class OwncloudDaoImpl implements IOwncloudDao {
     }
 
     @Override
-    public Content getContent(Long id) {
+    public Content getOM(String uuid) {
 
-        URI uri = UriComponentsBuilder.fromHttpUrl(Config.owncloudEndpoint() + CONTENT_SERVICES)
+        URI uri = UriComponentsBuilder.fromHttpUrl(Config.owncloudEndpoint()).path(OM_PATH)
                 // With id
-                .queryParam(ID_PARAMETER, id)
+                .path(uuid)
                 // GetUri
                 .build().encode().toUri();
 
@@ -148,26 +151,23 @@ public class OwncloudDaoImpl implements IOwncloudDao {
     }
 
     @Override
-    public InputStream getResultData(Long idOM, String resultFileName) throws DataNotFoundException {
-        URI uri = UriComponentsBuilder.fromHttpUrl(Config.owncloudEndpoint() + OM_RESULT + idOM).queryParam(
-                FILENAME_PARAMETER, resultFileName).build().encode().toUri();
+    public InputStream getResultData(String uuid) throws DataNotFoundException {
+        URI uri = UriComponentsBuilder.fromHttpUrl(Config.owncloudEndpoint()).path(OM_PATH).path(uuid).path("/stream")
+                .build().encode().toUri();
         try {
             URLConnection urlConnection = uri.toURL().openConnection();
             urlConnection.setRequestProperty(AUTHORIZATION_HEADER, BASIC_HEADER + Config.owncloudCredentials());
             return urlConnection.getInputStream();
         } catch (Exception e) {
             // Nothing todo
-            throw new DataNotFoundException("Unable to find file " + resultFileName, e);
+            throw new DataNotFoundException("Unable to find file from uuid " + uuid, e);
         }
 
     }
 
     @Override
-    public FileSizeInfo getFileSize(Long idOM, String resultFileName) {
-
-        URI uri = UriComponentsBuilder.fromHttpUrl(Config.owncloudEndpoint() + OM_INFO + idOM)
-                // With id
-                .queryParam(FILENAME_PARAMETER, resultFileName)
+    public FileSizeInfo getResultFileSize(String uuid) {
+        URI uri = UriComponentsBuilder.fromHttpUrl(Config.owncloudEndpoint()).path(OM_PATH).path(uuid).path("/filesize")
                 // GetUri
                 .build().encode().toUri();
 
@@ -184,7 +184,7 @@ public class OwncloudDaoImpl implements IOwncloudDao {
 
     @Override
     public void updateIndexStatus(IndexStatus indexStatus) {
-        URI uri = UriComponentsBuilder.fromHttpUrl(Config.owncloudEndpoint() + "/om").build().encode().toUri();
+        URI uri = UriComponentsBuilder.fromHttpUrl(Config.owncloudEndpoint()).path(OM_PATH).build().encode().toUri();
         post(uri, new GsonHttpMessageConverter(), indexStatus, IndexStatusResponse.class);
     }
 

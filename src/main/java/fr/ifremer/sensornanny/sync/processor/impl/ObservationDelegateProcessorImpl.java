@@ -19,6 +19,7 @@ import fr.ifremer.sensornanny.sync.config.Config;
 import fr.ifremer.sensornanny.sync.converter.PermissionsConverter;
 import fr.ifremer.sensornanny.sync.converter.XmlOMDtoConverter;
 import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
+import fr.ifremer.sensornanny.sync.dao.rest.DataNotFoundException;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.Ancestor;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.Coordinates;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.ObservationJson;
@@ -107,7 +108,7 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
         indexStatus.setIndexedObservations(0);
         indexStatus.setTime(System.currentTimeMillis());
         try {
-            Content content = ownCloudDao.getContent(fileInfo.getFileId());
+            Content content = ownCloudDao.getOM(fileInfo.getUuid());
             JAXBElement<InsertObservationType> result = ParseUtil.parse(omParser, content.getContent());
             List<OM> observations = xmlONDtoConverter.fromXML(result);
             final int syncModulo = Config.syncModulo();
@@ -129,9 +130,13 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
                 OMResult observationResult = observation.getResult();
                 // Retrieve the sensorML
                 SensorML sensor = cacheSystem.getData(systemUuid);
+                if (sensor == null) {
+                    throw new DataNotFoundException("Unable to find SML " + systemUuid);
+                }
+
                 Axis axis = sensor.getCoordinate();
 
-                observationDataManager.readData(fileInfo.getFileId(), observationResult, new Consumer<TimePosition>() {
+                observationDataManager.readData(fileInfo.getUuid(), observationResult, new Consumer<TimePosition>() {
 
                     @Override
                     public void accept(TimePosition timePosition) {

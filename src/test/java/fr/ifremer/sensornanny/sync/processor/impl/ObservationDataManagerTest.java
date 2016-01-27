@@ -60,10 +60,10 @@ public class ObservationDataManagerTest extends MockTest {
         value.setFileSize(Long.valueOf(i));
         expect(momarParser.accept(omResult.getRole())).andReturn(false);
         expect(netCdfParser.accept(omResult.getRole())).andReturn(true);
-        long idOM = 1L;
-        expect(owncloudDao.getFileSize(idOM, fileName)).andReturn(value);
+        String idOM = "1L";
+        expect(owncloudDao.getResultFileSize(idOM)).andReturn(value);
         InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("momar/obs/optode2011.csv");
-        expect(owncloudDao.getResultData(idOM, fileName)).andReturn(resourceAsStream);
+        expect(owncloudDao.getResultData(idOM)).andReturn(resourceAsStream);
 
         Consumer<TimePosition> consumer = new Consumer<TimePosition>() {
 
@@ -131,10 +131,10 @@ public class ObservationDataManagerTest extends MockTest {
         value.setFileSize(Long.valueOf(i));
         expect(momarParser.accept(omResult.getRole())).andReturn(false);
         expect(netCdfParser.accept(omResult.getRole())).andReturn(true);
-        long idOM = 1L;
-        expect(owncloudDao.getFileSize(idOM, fileName)).andReturn(value);
+        String idOM = "1L";
+        expect(owncloudDao.getResultFileSize(idOM)).andReturn(value);
         InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("momar/obs/optode2011.csv");
-        expect(owncloudDao.getResultData(idOM, fileName)).andReturn(resourceAsStream);
+        expect(owncloudDao.getResultData(idOM)).andReturn(resourceAsStream);
 
         Consumer<TimePosition> consumer = new Consumer<TimePosition>() {
 

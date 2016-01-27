@@ -32,7 +32,7 @@ public class ObservationDataManager {
 
     private Semaphore semaphore = new Semaphore(Config.maxMemory());
 
-    public void readData(Long omId, OMResult observationResult, Consumer<TimePosition> consumer)
+    public void readData(String uuid, OMResult observationResult, Consumer<TimePosition> consumer)
             throws DataNotFoundException {
         IObservationParser<TimePosition> parser = getParser(observationResult.getRole());
         if (parser == null) {
@@ -40,14 +40,14 @@ public class ObservationDataManager {
         }
 
         String fileName = new File(observationResult.getUrl()).getName();
-        FileSizeInfo fileSize = owncloudDao.getFileSize(omId, fileName);
+        FileSizeInfo fileSize = owncloudDao.getResultFileSize(uuid);
         if (fileSize != null && fileSize.getFileSize() != null) {
             Long fileInMo = fileSize.getFileSize() / ONE_MEGA_OCTECT_IN_OCTET;
             int permits = fileInMo.intValue();
             try {
                 // Acquire size elements
                 acquire(permits);
-                InputStream stream = owncloudDao.getResultData(omId, fileName);
+                InputStream stream = owncloudDao.getResultData(uuid);
                 if (stream != null) {
                     parser.read(fileName, stream, consumer);
                 }

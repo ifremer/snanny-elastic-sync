@@ -32,8 +32,8 @@ public class OwncloudReaderImpl implements IOwncloudReader {
     }
 
     @Override
-    public Content getContent(Long id) {
-        return owncloudDao.getContent(id);
+    public Content getOMContent(String uuid) {
+        return owncloudDao.getOM(uuid);
     }
 
 }

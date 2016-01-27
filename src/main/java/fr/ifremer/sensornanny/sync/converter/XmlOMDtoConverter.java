@@ -45,21 +45,28 @@ public class XmlOMDtoConverter extends AbstractXMLConverter {
             om.setName(extractFirstName(omObservation.getName()));
 
             TimeObjectPropertyType phnomenType = omObservation.getPhenomenonTime();
-            List<Date> dates = timeConverter.convertToDates(phnomenType.getAbstractTimeObject(), phnomenType.getTYPE());
-            if (CollectionUtils.isNotEmpty(dates)) {
-                om.setBeginPosition(dates.get(0));
-                if (dates.size() > 1) {
-                    om.setEndPosition(dates.get(1));
+            if (phnomenType != null) {
+                List<Date> dates = timeConverter.convertToDates(phnomenType.getAbstractTimeObject(), phnomenType
+                        .getTYPE());
+                if (CollectionUtils.isNotEmpty(dates)) {
+                    om.setBeginPosition(dates.get(0));
+                    if (dates.size() > 1) {
+                        om.setEndPosition(dates.get(1));
+                    }
                 }
             }
-
             BoundingShapeType boundedBy = omObservation.getBoundedBy();
-            EnvelopeType envelop = boundedBy.getEnvelope().getValue();
-            om.setLowerCorner(Axis.from(envelop.getLowerCorner().getValue()));
-            om.setUpperCorner(Axis.from(envelop.getUpperCorner().getValue()));
+            if (boundedBy != null) {
+                EnvelopeType envelop = boundedBy.getEnvelope().getValue();
+                om.setLowerCorner(Axis.from(envelop.getLowerCorner().getValue()));
+                om.setUpperCorner(Axis.from(envelop.getUpperCorner().getValue()));
+            }
 
             TimeInstantPropertyType resultTime = omObservation.getResultTime();
-            om.setUpdateDate(timeConverter.extractDate(resultTime.getTimeInstant().getTimePosition()));
+            if (resultTime != null) {
+                om.setUpdateDate(timeConverter.extractDate(resultTime.getTimeInstant().getTimePosition()));
+            }
+
             om.setProcedure(omObservation.getProcedure().getHref());
             OMResult omResult = new OMResult();
             Object omObservationResult = omObservation.getResult();
@@ -69,7 +76,6 @@ public class XmlOMDtoConverter extends AbstractXMLConverter {
             }
 
             om.setResult(omResult);
-
             result.add(om);
         }
         return result;

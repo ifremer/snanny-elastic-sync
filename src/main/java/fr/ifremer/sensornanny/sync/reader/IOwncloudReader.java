@@ -27,9 +27,9 @@ public interface IOwncloudReader {
     /**
      * Retrieve content form id
      * 
-     * @param id identifier of the content
+     * @param uuid identifier of the O&M
      * @return content element
      */
-    Content getContent(Long id);
+    Content getOMContent(String uuid);
 
 }

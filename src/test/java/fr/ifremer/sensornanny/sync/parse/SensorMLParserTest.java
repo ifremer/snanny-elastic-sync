@@ -82,8 +82,8 @@ public class SensorMLParserTest extends UnitTest {
         Assert.assertNull(sensorML.getTerms());
         Axis coordinate = sensorML.getCoordinate();
         Assert.assertNotNull("coordinates must not be null", coordinate);
-        Assert.assertEquals(37.302666, coordinate.getLon());
-        Assert.assertEquals(32.2765, coordinate.getLat());
+        Assert.assertEquals(37.302666, coordinate.getLat());
+        Assert.assertEquals(32.2765, coordinate.getLon());
     }
 
     @Test
