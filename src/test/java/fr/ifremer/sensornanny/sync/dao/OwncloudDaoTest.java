@@ -2,15 +2,10 @@ package fr.ifremer.sensornanny.sync.dao;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.function.Consumer;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -58,20 +53,12 @@ public class OwncloudDaoTest extends UnitTest {
         System.out.println(result.getContent());
     }
 
-    @SuppressWarnings("resource")
     @Test
     public void testCSVParserGetContent() throws IOException {
         FileSizeInfo resultFileSize = dao.getResultFileSize("53048b87-4225-4e92-8e87-c33a955c4928");
         System.out.println(resultFileSize.getFileName() + "  " + resultFileSize.getFileSize());
         InputStream result = dao.getResultData("53048b87-4225-4e92-8e87-c33a955c4928");
-        CSVParser csvParser = new CSVParser(new InputStreamReader(result), CSVFormat.DEFAULT);
-        csvParser.forEach(new Consumer<CSVRecord>() {
-
-            @Override
-            public void accept(CSVRecord t) {
-                System.out.println(t);
-            }
-        });
+        Assert.assertNotNull("result must not be null", result);
     }
 
     @Test

@@ -147,6 +147,14 @@ public final class Config {
         return getInt("sync.modulo", 100);
     }
 
+    public static Integer moduloForParser(Class<?> parser) {
+        return getInt(parser.getName() + ".modulo", -1);
+    }
+
+    public static String syncParserLib() {
+        return get("sync.parsers.folder");
+    }
+
     /**
      * Check properties
      */

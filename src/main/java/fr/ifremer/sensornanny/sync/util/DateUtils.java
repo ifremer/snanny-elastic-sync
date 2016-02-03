@@ -4,10 +4,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.common.collect.Maps;
 
 public class DateUtils {
     private static final double START_TIME_NETCDF = 2209165199011d;
@@ -19,7 +19,7 @@ public class DateUtils {
     private static ThreadLocal<Map<String, SimpleDateFormat>> formatter = new ThreadLocal<Map<String, SimpleDateFormat>>() {
 
         protected Map<String, SimpleDateFormat> initialValue() {
-            Map<String, SimpleDateFormat> map = Maps.newHashMap();
+            Map<String, SimpleDateFormat> map = new HashMap<>();
             map.put(ISO_DATETIME_8601, new SimpleDateFormat(ISO_DATETIME_8601));
             map.put(ISO_DATE_8601, new SimpleDateFormat(ISO_DATE_8601));
             map.put(ISO_DATETIME, new SimpleDateFormat(ISO_DATETIME));

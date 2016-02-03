@@ -5,27 +5,26 @@ import java.io.InputStream;
 import java.util.concurrent.Semaphore;
 import java.util.function.Consumer;
 
+import org.springframework.web.client.HttpClientErrorException;
+
 import com.google.inject.Inject;
 
+import fr.ifremer.sensornanny.observation.parser.IObservationParser;
+import fr.ifremer.sensornanny.observation.parser.ObservationData;
+import fr.ifremer.sensornanny.observation.parser.TimePosition;
 import fr.ifremer.sensornanny.sync.config.Config;
 import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
 import fr.ifremer.sensornanny.sync.dao.rest.DataNotFoundException;
 import fr.ifremer.sensornanny.sync.dto.model.OMResult;
-import fr.ifremer.sensornanny.sync.dto.model.TimePosition;
 import fr.ifremer.sensornanny.sync.dto.owncloud.FileSizeInfo;
-import fr.ifremer.sensornanny.sync.parse.observations.IObservationParser;
-import fr.ifremer.sensornanny.sync.parse.observations.impl.MomarObservationParser;
-import fr.ifremer.sensornanny.sync.parse.observations.impl.NetCdfObservationParser;
+import fr.ifremer.sensornanny.sync.parse.ParserManager;
 
 public class ObservationDataManager {
 
     public static final int ONE_MEGA_OCTECT_IN_OCTET = 1000000;
 
     @Inject
-    private MomarObservationParser momarParser;
-
-    @Inject
-    private NetCdfObservationParser netCdfParser;
+    private ParserManager parserManager;
 
     @Inject
     private IOwncloudDao owncloudDao;
@@ -34,13 +33,15 @@ public class ObservationDataManager {
 
     public void readData(String uuid, OMResult observationResult, Consumer<TimePosition> consumer)
             throws DataNotFoundException {
-        IObservationParser<TimePosition> parser = getParser(observationResult.getRole());
+        String fileName = new File(observationResult.getUrl()).getName();
+        ObservationData data = ObservationData.of(fileName, observationResult.getRole());
+        IObservationParser parser = parserManager.getParser(data);
         if (parser == null) {
             return;
         }
 
-        String fileName = new File(observationResult.getUrl()).getName();
-        FileSizeInfo fileSize = owncloudDao.getResultFileSize(uuid);
+        Integer moduloForParser = Config.moduloForParser(parser.getClass());
+        FileSizeInfo fileSize = getFileSize(uuid, observationResult.getUrl());
         if (fileSize != null && fileSize.getFileSize() != null) {
             Long fileInMo = fileSize.getFileSize() / ONE_MEGA_OCTECT_IN_OCTET;
             int permits = fileInMo.intValue();
@@ -49,7 +50,16 @@ public class ObservationDataManager {
                 acquire(permits);
                 InputStream stream = owncloudDao.getResultData(uuid);
                 if (stream != null) {
-                    parser.read(fileName, stream, consumer);
+                    parser.read(data, stream, new Consumer<TimePosition>() {
+
+                        @Override
+                        public void accept(TimePosition result) {
+                            // Filter using modulo on the data manager
+                            if (result.getRecordNumber() % moduloForParser == 0) {
+                                consumer.accept(result);
+                            }
+                        }
+                    });
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -61,14 +71,12 @@ public class ObservationDataManager {
         }
     }
 
-    private IObservationParser<TimePosition> getParser(String role) {
-        if (momarParser.accept(role)) {
-            return momarParser;
+    private FileSizeInfo getFileSize(String uuid, String filePath) throws DataNotFoundException {
+        try {
+            return owncloudDao.getResultFileSize(uuid);
+        } catch (HttpClientErrorException e) {
+            throw new DataNotFoundException("Unable to find result file " + filePath + " for uuid " + uuid);
         }
-        if (netCdfParser.accept(role)) {
-            return netCdfParser;
-        }
-        return null;
     }
 
     protected void acquire(int permits) throws InterruptedException {

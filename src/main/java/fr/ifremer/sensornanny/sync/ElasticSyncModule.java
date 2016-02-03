@@ -18,6 +18,7 @@ import fr.ifremer.sensornanny.sync.dao.ITermDao;
 import fr.ifremer.sensornanny.sync.dao.impl.ElasticDaoImpl;
 import fr.ifremer.sensornanny.sync.dao.impl.OwncloudDaoImpl;
 import fr.ifremer.sensornanny.sync.dao.impl.TermDaoImpl;
+import fr.ifremer.sensornanny.sync.parse.ParserManager;
 import fr.ifremer.sensornanny.sync.parse.impl.OMParser;
 import fr.ifremer.sensornanny.sync.parse.impl.SensorMLParser;
 import fr.ifremer.sensornanny.sync.processor.ElasticProcessorImpl;
@@ -51,6 +52,7 @@ public class ElasticSyncModule extends AbstractModule {
 
         // Observation data manager - using semaphores to handle low memory usage
         bind(ObservationDataManager.class);
+        bind(ParserManager.class);
 
         // AOP
         bindInterceptor(Matchers.not(Matchers.inPackage(AbstractXMLConverter.class.getPackage())),

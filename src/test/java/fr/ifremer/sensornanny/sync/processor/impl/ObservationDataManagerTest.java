@@ -12,6 +12,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import fr.ifremer.sensornanny.observation.parser.ObservationData;
+import fr.ifremer.sensornanny.observation.parser.TimePosition;
 import fr.ifremer.sensornanny.sync.base.MockTest;
 import fr.ifremer.sensornanny.sync.base.UnitTest;
 import fr.ifremer.sensornanny.sync.config.Config;
@@ -19,10 +21,7 @@ import fr.ifremer.sensornanny.sync.converter.PermissionsConverter;
 import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
 import fr.ifremer.sensornanny.sync.dao.rest.DataNotFoundException;
 import fr.ifremer.sensornanny.sync.dto.model.OMResult;
-import fr.ifremer.sensornanny.sync.dto.model.TimePosition;
 import fr.ifremer.sensornanny.sync.dto.owncloud.FileSizeInfo;
-import fr.ifremer.sensornanny.sync.parse.observations.impl.MomarObservationParser;
-import fr.ifremer.sensornanny.sync.parse.observations.impl.NetCdfObservationParser;
 
 @Category(UnitTest.class)
 public class ObservationDataManagerTest extends MockTest {
@@ -31,10 +30,7 @@ public class ObservationDataManagerTest extends MockTest {
     ObservationDataManager manager = new ObservationDataManager();
 
     @Mock
-    MomarObservationParser momarParser;
-
-    @Mock
-    NetCdfObservationParser netCdfParser;
+    FakeParser parser;
 
     @Mock(type = MockType.NICE)
     PermissionsConverter permissionConverter;
@@ -46,9 +42,12 @@ public class ObservationDataManagerTest extends MockTest {
     public void testManagerIT() throws InterruptedException, DataNotFoundException {
         Capture<Integer> capture = EasyMock.newCapture();
         OMResult omResult = new OMResult();
-        omResult.setRole("application/netcdf");
+        String role = "application/netcdf";
+        omResult.setRole(role);
         String fileName = "file1.nav";
         omResult.setUrl(fileName);
+
+        ObservationData observation = ObservationData.of(fileName, role);
 
         FileSizeInfo value = new FileSizeInfo();
         int maxMemory = Config.maxMemory();
@@ -58,8 +57,8 @@ public class ObservationDataManagerTest extends MockTest {
         // Set Size is next all permits
         long i = fileInMO * ObservationDataManager.ONE_MEGA_OCTECT_IN_OCTET;
         value.setFileSize(Long.valueOf(i));
-        expect(momarParser.accept(omResult.getRole())).andReturn(false);
-        expect(netCdfParser.accept(omResult.getRole())).andReturn(true);
+
+        expect(parser.accept(observation)).andReturn(true);
         String idOM = "1L";
         expect(owncloudDao.getResultFileSize(idOM)).andReturn(value);
         InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("momar/obs/optode2011.csv");
@@ -73,11 +72,11 @@ public class ObservationDataManagerTest extends MockTest {
             }
         };
 
-        netCdfParser.read("file1.nav", resourceAsStream, consumer);
-        expectLastCall().andStubDelegateTo(new NetCdfObservationParser() {
+        parser.read(observation, resourceAsStream, consumer);
+        expectLastCall().andStubDelegateTo(new FakeParser() {
 
             @Override
-            public void read(String fileName, InputStream stream, Consumer<TimePosition> consumer) {
+            public void read(ObservationData fileName, InputStream stream, Consumer<TimePosition> consumer) {
                 sleep(100L);
                 consumer.accept(new TimePosition());
             }
@@ -116,9 +115,11 @@ public class ObservationDataManagerTest extends MockTest {
 
         Capture<Integer> capture = EasyMock.newCapture();
         OMResult omResult = new OMResult();
-        omResult.setRole("application/netcdf");
+        String role = "application/netcdf";
+        omResult.setRole(role);
         String fileName = "file1.nav";
         omResult.setUrl(fileName);
+        ObservationData observation = ObservationData.of(fileName, role);
 
         FileSizeInfo value = new FileSizeInfo();
         int maxMemory = Config.maxMemory();
@@ -129,8 +130,8 @@ public class ObservationDataManagerTest extends MockTest {
         // Set Size is next all permits
         final long i = fileInMo * ObservationDataManager.ONE_MEGA_OCTECT_IN_OCTET;
         value.setFileSize(Long.valueOf(i));
-        expect(momarParser.accept(omResult.getRole())).andReturn(false);
-        expect(netCdfParser.accept(omResult.getRole())).andReturn(true);
+        // expect(momarParser.accept(omResult.getRole())).andReturn(false);
+        expect(parser.accept(observation)).andReturn(true);
         String idOM = "1L";
         expect(owncloudDao.getResultFileSize(idOM)).andReturn(value);
         InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("momar/obs/optode2011.csv");
@@ -144,11 +145,11 @@ public class ObservationDataManagerTest extends MockTest {
             }
         };
 
-        netCdfParser.read("file1.nav", resourceAsStream, consumer);
-        expectLastCall().andStubDelegateTo(new NetCdfObservationParser() {
+        parser.read(observation, resourceAsStream, consumer);
+        expectLastCall().andStubDelegateTo(new FakeParser() {
 
             @Override
-            public void read(String fileName, InputStream stream, Consumer<TimePosition> consumer) {
+            public void read(ObservationData data, InputStream stream, Consumer<TimePosition> consumer) {
                 sleep(100L);
                 consumer.accept(new TimePosition());
             }

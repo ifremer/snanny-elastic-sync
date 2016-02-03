@@ -1,11 +1,12 @@
 package fr.ifremer.sensornanny.sync.manager;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 
@@ -31,7 +32,7 @@ public final class NodeManager {
     private static NodeManager instance;
 
     private NodeManager() {
-        extractClientSettings();
+        init();
     }
 
     public static NodeManager getInstance() {
@@ -43,17 +44,22 @@ public final class NodeManager {
 
     public static void init() {
         LOGGER.log(Level.INFO, "Connecting to ElasticSearch Cluster");
-        extractClientSettings();
+        try {
+            extractClientSettings();
+        } catch (UnknownHostException e) {
+            throw new IllegalStateException("Unable to load transport node ", e);
+        }
     }
 
-    public static void extractClientSettings() {
-        Settings clientSettings = ImmutableSettings.settingsBuilder().put(CLUSTER_NAME, Config.clusterName()).put(
+    public static void extractClientSettings() throws UnknownHostException {
+        Settings settings = Settings.settingsBuilder().put(CLUSTER_NAME, Config.clusterName()).put(
                 CLIENT_TRANSPORT_SNIFF, true).build();
 
-        client = new TransportClient(clientSettings);
+        client = new TransportClient.Builder().settings(settings).build();
         String[] nodes = Config.clusterHosts();
         for (String host : nodes) {
-            client.addTransportAddress(new InetSocketTransportAddress(host, Config.clusterPort()));
+            client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), Config
+                    .clusterPort()));
         }
     }
 

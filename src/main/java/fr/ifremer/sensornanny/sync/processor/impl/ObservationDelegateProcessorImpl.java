@@ -13,9 +13,9 @@ import org.apache.commons.collections4.CollectionUtils;
 
 import com.google.inject.Inject;
 
+import fr.ifremer.sensornanny.observation.parser.TimePosition;
 import fr.ifremer.sensornanny.sync.cache.impl.SensorMLCacheManager;
 import fr.ifremer.sensornanny.sync.cache.impl.TermCacheManager;
-import fr.ifremer.sensornanny.sync.config.Config;
 import fr.ifremer.sensornanny.sync.converter.PermissionsConverter;
 import fr.ifremer.sensornanny.sync.converter.XmlOMDtoConverter;
 import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
@@ -29,7 +29,6 @@ import fr.ifremer.sensornanny.sync.dto.model.OM;
 import fr.ifremer.sensornanny.sync.dto.model.OMResult;
 import fr.ifremer.sensornanny.sync.dto.model.SensorML;
 import fr.ifremer.sensornanny.sync.dto.model.Term;
-import fr.ifremer.sensornanny.sync.dto.model.TimePosition;
 import fr.ifremer.sensornanny.sync.dto.owncloud.Content;
 import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatus;
 import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
@@ -111,7 +110,6 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
             Content content = ownCloudDao.getOM(fileInfo.getUuid());
             JAXBElement<InsertObservationType> result = ParseUtil.parse(omParser, content.getContent());
             List<OM> observations = xmlONDtoConverter.fromXML(result);
-            final int syncModulo = Config.syncModulo();
 
             // Get shares informations
             Permission permission = permissionConverter.extractPermissions(content.getShares());
@@ -141,42 +139,39 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
                     @Override
                     public void accept(TimePosition timePosition) {
 
-                        if (timePosition.getRecordNumber() % syncModulo == 0) {
+                        ObservationJson item = new ObservationJson();
+                        String identifier = observation.getIdentifier();
+                        item.setUuid(identifier);
+                        item.setAncestors(ancestors);
+                        item.setName(observation.getName());
+                        item.setResult(observationResult.getUrl());
+                        item.setAuthor(content.getUser());
 
-                            ObservationJson item = new ObservationJson();
-                            String identifier = observation.getIdentifier();
-                            item.setUuid(identifier);
-                            item.setAncestors(ancestors);
-                            item.setName(observation.getName());
-                            item.setResult(observationResult.getUrl());
-                            item.setAuthor(content.getUser());
+                        item.setDescription(observation.getDescription());
+                        item.setUpdateTimestamp(observation.getUpdateDate());
 
-                            item.setDescription(observation.getDescription());
-                            item.setUpdateTimestamp(observation.getUpdateDate());
+                        // Get the timestamp
+                        item.setResultTimestamp(timePosition.getDate());
 
-                            // Get the timestamp
-                            item.setResultTimestamp(timePosition.getDate());
+                        Coordinates coordinates = new Coordinates();
+                        if (timePosition.getLatitude() != null && timePosition.getLongitude() != null) {
+                            coordinates.setLat(timePosition.getLatitude());
+                            coordinates.setLon(timePosition.getLongitude());
+                            item.setDepth(timePosition.getDepth());
+                        } else if (axis != null) {
+                            coordinates.setLat(axis.getLat().doubleValue());
+                            coordinates.setLon(axis.getLon().doubleValue());
+                            item.setDepth(axis.getDep());
+                        }
+                        item.setCoordinates(coordinates);
 
-                            Coordinates coordinates = new Coordinates();
-                            if (timePosition.getLatitude() != null && timePosition.getLongitude() != null) {
-                                coordinates.setLat(timePosition.getLatitude());
-                                coordinates.setLon(timePosition.getLongitude());
-                                item.setDepth(timePosition.getDepth());
-                            } else if (axis != null) {
-                                coordinates.setLat(axis.getLat());
-                                coordinates.setLon(axis.getLon());
-                                item.setDepth(axis.getDep());
-                            }
-                            item.setCoordinates(coordinates);
+                        // Set permissions
+                        item.setPermission(permission);
 
-                            // Set permissions
-                            item.setPermission(permission);
-
-                            String uuid = new StringBuilder(identifier).append(ID_SEPARATOR).append(String.format(
-                                    FORMAT_ZERO_PAD, timePosition.getRecordNumber())).toString();
-                            if (elasticWriter.write(uuid, item)) {
-                                indexStatus.increaseIndexed();
-                            }
+                        String uuid = new StringBuilder(identifier).append(ID_SEPARATOR).append(String.format(
+                                FORMAT_ZERO_PAD, timePosition.getRecordNumber())).toString();
+                        if (elasticWriter.write(uuid, item)) {
+                            indexStatus.increaseIndexed();
                         }
                     }
                 });

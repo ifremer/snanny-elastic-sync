@@ -1,5 +1,7 @@
 package fr.ifremer.sensornanny.sync.dto.elasticsearch;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Coordinates representation
  * 
@@ -8,8 +10,10 @@ package fr.ifremer.sensornanny.sync.dto.elasticsearch;
  */
 public class Coordinates {
     /** Latitude of the point */
+    @SerializedName("lat")
     private Number lat;
     /** Longitude of the point */
+    @SerializedName("lon")
     private Number lon;
 
     public void setLat(Number lat) {

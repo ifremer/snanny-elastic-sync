@@ -18,21 +18,29 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.elasticsearch.action.exists.ExistsRequestBuilder;
-import org.elasticsearch.common.util.concurrent.ThreadFactoryBuilder;
+import org.elasticsearch.action.search.SearchAction;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import fr.ifremer.sensornanny.sync.config.Config;
 import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
 import fr.ifremer.sensornanny.sync.manager.NodeManager;
+import fr.ifremer.sensornanny.sync.parse.ParserManager;
 import fr.ifremer.sensornanny.sync.processor.IElasticProcessor;
 import fr.ifremer.sensornanny.sync.reader.FifoReader;
 import fr.ifremer.sensornanny.sync.reader.IOwncloudReader;
 import fr.ifremer.sensornanny.sync.report.ReportManager;
 import fr.ifremer.sensornanny.sync.util.DateUtils;
 
+/**
+ * Main class for elasticsearch synchronisation
+ * 
+ * @author athorel
+ *
+ */
 public class Main {
 
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
@@ -99,6 +107,12 @@ public class Main {
         System.exit(0);
     }
 
+    /**
+     * Method that allow to execute option with since parameter
+     * 
+     * @param option option of since
+     * @throws ParseException exception on parsing options
+     */
     private static void executeWithOptionSince(Option option) throws ParseException {
         Date to;
         Date from;
@@ -114,10 +128,13 @@ public class Main {
         }
     }
 
+    /**
+     * Method that allow to execute synchronisation on last failed files
+     */
     private static void executeWithOptionFailure() {
         long time = System.currentTimeMillis();
         LOGGER.info(String.format("Sync Failed sync Owncloud files"));
-
+        injector.getInstance(ParserManager.class);
         IOwncloudReader owncloudReader = injector.getInstance(IOwncloudReader.class);
         List<OwncloudSyncModel> activities = owncloudReader.getFailedSyncActivities();
 
@@ -127,25 +144,38 @@ public class Main {
         LOGGER.info(String.format("Time %ds", activities.size(), timeTook));
     }
 
+    /**
+     * Method that allow to execute option with range parameters (date from and date to)
+     * 
+     * @param option option of since
+     * @throws ParseException exception on parsing options
+     */
     private static void executeWithOptionRange(Option option) throws ParseException {
-        Date from = parseDate(option.getValue(0));
-        Date to = parseDate(option.getValue(1));
+        Date from = DateUtils.parse(option.getValue(0));
+        Date to = DateUtils.parse(option.getValue(1));
         execute(from, to);
     }
 
+    /**
+     * Diplay the help message
+     * 
+     * @param options using help message
+     */
     private static void showHelp(Options options) {
         new HelpFormatter().printHelp("java -jar elastic-sync.jar [-s||-f] ", options);
         System.exit(0);
     }
 
-    private static Date parseDate(String date) {
-        return DateUtils.parse(date);
-    }
-
+    /**
+     * Execute treatment with activity
+     * 
+     * @param from
+     * @param to
+     */
     protected static void execute(Date from, Date to) {
         long time = System.currentTimeMillis();
         LOGGER.info(String.format("Sync Owncloud files modified between %s and %s", from, to));
-
+        injector.getInstance(ParserManager.class);
         IOwncloudReader owncloudReader = injector.getInstance(IOwncloudReader.class);
         List<OwncloudSyncModel> activities = owncloudReader.getActivities(from, to);
 
@@ -163,8 +193,8 @@ public class Main {
             if (activities.size() > 0) {
                 FifoReader fifoReader = new FifoReader(activities.iterator());
 
-                new ExistsRequestBuilder(NodeManager.getInstance().getClient()).setIndices(Config.observationsIndex())
-                        .get();
+                new SearchRequestBuilder(NodeManager.getInstance().getClient(), SearchAction.INSTANCE).setIndices(Config
+                        .observationsIndex()).setSize(0).setTerminateAfter(1).get();
 
                 LOGGER.info(String.format("Start %d executors", Config.threadNumbers()));
                 ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("T-%d").build();
