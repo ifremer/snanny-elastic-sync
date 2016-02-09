@@ -72,4 +72,3 @@ You need to add folder wich contains application.properties to the execution cla
  -r,--range &lt;from&gt; &lt;to&gt;   Synchronize from owncloud to elasticsearch from date to date
  -s,--since &lt;period&gt;      Synchronize from owncloud to elasticsearch since a period
  -f,--relaunch_failure    Synchronize from owncloud to elasticsearch the last failed synchronization</code></pre>
- 

@@ -107,12 +107,14 @@ public class XmlSensorMLDtoConverter extends AbstractXMLConverter {
             List<String> terms = new ArrayList<>();
             outputList.getOutput().forEach(new Consumer<Output>() {
                 public void accept(Output output) {
-                    Object value = output.getAbstractDataComponent().getValue();
-                    if (value instanceof DataRecordType) {
-                        List<Field> fields = ((DataRecordType) value).getField();
-                        for (Field field : fields) {
-                            AbstractDataComponentType quantity = field.getAbstractDataComponent().getValue();
-                            terms.add(StringUtils.trimToNull(quantity.getDefinition()));
+                    if (output != null && output.getAbstractDataComponent() != null) {
+                        Object value = output.getAbstractDataComponent().getValue();
+                        if (value instanceof DataRecordType) {
+                            List<Field> fields = ((DataRecordType) value).getField();
+                            for (Field field : fields) {
+                                AbstractDataComponentType quantity = field.getAbstractDataComponent().getValue();
+                                terms.add(StringUtils.trimToNull(quantity.getDefinition()));
+                            }
                         }
                     }
                 };
