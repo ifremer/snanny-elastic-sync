@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sml:PhysicalSystem xmlns:sml="http://www.opengis.net/sensorml/2.0" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" gml:id="top" xsi:schemaLocation="http://www.opengis.net/sensorml/2.0 http://schemas.opengis.net/sensorML/2.0/sensorML.xsd">
+    <!-- Description --> 
+    <gml:description>    </gml:description>
+    <!-- Name --> 
+    <gml:name >   Optode O2   </gml:name>  
+    <!-- keywords--> 
+    <sml:keywords>
+        <sml:KeywordList>
+            <sml:keyword>Oceanography</sml:keyword>
+            <sml:keyword>Meteorology</sml:keyword>
+            <sml:keyword>Observatory</sml:keyword>
+            <sml:keyword>Wind speed</sml:keyword>
+            <sml:keyword>Currents</sml:keyword>
+        </sml:KeywordList>
+    </sml:keywords>
+    
+    <!-- Identification--> 
+       <sml:identification>
+        <sml:IdentifierList>
+    <sml:identifier>
+        
+        <sml:Term definition="http://www.ifremer.fr/tematres/vocab/index.php?tema=66">
+            <sml:label>UUID</sml:label>
+            <sml:value>ad7ec870-2395-4a75-a38f-ccf67fe15136</sml:value>
+        </sml:Term>
+    </sml:identifier>
+     
+    <sml:identifier>
+        <sml:Term definition="http://www.ifremer.fr/tematres/vocab/index.php?tema=66">
+            <sml:label>serial number</sml:label>
+            <sml:value>1180</sml:value>
+        </sml:Term>
+    </sml:identifier>
+      
+    </sml:IdentifierList>
+    </sml:identification>
+    
+    <!-- Classification -->
+          
+    <sml:classification>
+        <sml:ClassifierList>
+          
+                
+            <sml:classifier>
+              
+                <sml:Term definition="http://www.ifremer.fr/tematres/vocab/index.php?tema=129">
+                    <sml:label>manufacturer</sml:label>
+                    <sml:codeSpace xlink:href="http://vocab.nerc.ac.uk/collection/L11/current/D08" ></sml:codeSpace>
+                    <sml:value>Aanderaa</sml:value>
+                </sml:Term>
+              
+            </sml:classifier>
+                 
+            <sml:classifier>
+              
+                <sml:Term definition="http://www.ifremer.fr/tematres/vocab/index.php?tema=129">
+                    <sml:label>Model number</sml:label>
+                    <sml:codeSpace xlink:href="http://vocab.nerc.ac.uk/collection/L11/current/D08" ></sml:codeSpace>
+                    <sml:value>3830</sml:value>
+                </sml:Term>
+              
+            </sml:classifier>
+                 
+            <sml:classifier>
+              
+                <sml:Term definition="http://www.ifremer.fr/tematres/vocab/index.php?tema=129">
+                    <sml:label>sampling period</sml:label>
+                    <sml:codeSpace xlink:href="http://vocab.nerc.ac.uk/collection/L11/current/D08" ></sml:codeSpace>
+                    <sml:value>15min</sml:value>
+                </sml:Term>
+              
+            </sml:classifier>
+                 
+            <sml:classifier>
+              
+                <sml:Term definition="http://www.ifremer.fr/tematres/vocab/index.php?tema=129">
+                    <sml:label>oxygen calibration method</sml:label>
+                    <sml:codeSpace xlink:href="http://vocab.nerc.ac.uk/collection/L11/current/D08" ></sml:codeSpace>
+                    <sml:value>internal</sml:value>
+                </sml:Term>
+              
+            </sml:classifier>
+                 
+            <sml:classifier>
+              
+                <sml:Term definition="http://www.ifremer.fr/tematres/vocab/index.php?tema=129">
+                    <sml:label>temperature calibration</sml:label>
+                    <sml:codeSpace xlink:href="http://vocab.nerc.ac.uk/collection/L11/current/D08" ></sml:codeSpace>
+                    <sml:value>None</sml:value>
+                </sml:Term>
+              
+            </sml:classifier>
+                 
+            <sml:classifier>
+              
+                <sml:Term definition="http://www.ifremer.fr/tematres/vocab/index.php?tema=129">
+                    <sml:label>oxygen calibration period</sml:label>
+                    <sml:codeSpace xlink:href="http://vocab.nerc.ac.uk/collection/L11/current/D08" ></sml:codeSpace>
+                    <sml:value>1year</sml:value>
+                </sml:Term>
+              
+            </sml:classifier>
+               
+              
+        </sml:ClassifierList>
+    </sml:classification>
+      
+    
+    <!-- Contacts -->
+       
+     <sml:contacts>
+        <sml:ContactList>
+       
+       
+           <sml:contact>
+                <gmd:CI_ResponsibleParty uuid="http://annuaire.ifremer.fr/cv/16604/">
+                    
+                    <gmd:organisationName><gco:CharacterString>IFREMER</gco:CharacterString></gmd:organisationName>
+                    <gmd:contactInfo>
+                        <gmd:CI_Contact>
+                            <gmd:address>
+                                <gmd:CI_Address>
+                                    <gmd:electronicMailAddress>                                        
+                                       <gco:CharacterString>pierre.marie.sarradin@ifremer.fr</gco:CharacterString>
+                                     </gmd:electronicMailAddress>
+                                </gmd:CI_Address>
+                            </gmd:address>
+                        </gmd:CI_Contact>
+                    </gmd:contactInfo>
+                    <gmd:role><gmd:CI_RoleCode codeList="http://www.ifremer.fr/tematres/vocab/index.php?tema=67" codeListValue="http://www.ifremer.fr/tematres/vocab/index.php?tema=69"></gmd:CI_RoleCode></gmd:role>
+                </gmd:CI_ResponsibleParty>
+            </sml:contact>
+                         
+       
+       </sml:ContactList>
+    </sml:contacts>
+      
+   
+    <!-- history -->
+    
+                
+                
+            
+                
+    <!-- type OF -->
+    <sml:typeOf xlink:href="basic.Sensor.xml"></sml:typeOf>
+   
+    <!-- output -->
+       
+    <sml:outputs>
+        <sml:OutputList>
+           
+             
+            <sml:output name="oxygen" xlink:href="http://www.ifremer.fr/tematres/vocab/index.php?tema=164" ></sml:output>
+             
+            <sml:output name="temperature" xlink:href="http://www.ifremer.fr/tematres/vocab/index.php?tema=106" ></sml:output>
+              
+             
+        </sml:OutputList>
+    </sml:outputs>
+      
+   
+   <!-- position -->
+    <sml:position>        
+        <gml:Point gml:id="stationLocation" srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+            <gml:coordinates> </gml:coordinates>
+        </gml:Point>        
+    </sml:position>
+    <!-- components list --> 
+   
+
+    
+</sml:PhysicalSystem>

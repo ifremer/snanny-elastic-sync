@@ -105,4 +105,14 @@ public class SensorMLParserTest extends UnitTest {
         Assert.assertNull(sensorML.getTerms());
     }
 
+    @Test
+    public void testParseOptode() throws Exception {
+
+        String file = "sensorML/optode_o2.xml";
+        InputStream inputStream = load(file);
+        SensorML sensorML = converter.fromXML(parser.parse(inputStream));
+
+        Assert.assertNotNull("sensorML must not be null", sensorML);
+    }
+
 }

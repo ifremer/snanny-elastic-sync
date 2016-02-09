@@ -74,4 +74,11 @@ public class SensorML {
     public void setKeywords(List<String> keywords) {
         this.keywords = keywords;
     }
+
+    @Override
+    public String toString() {
+        return "SensorML [uuid=" + uuid + ", name=" + name + ", description=" + description + ", terms=" + terms
+                + ", keywords=" + keywords + ", components=" + components + ", coordinate=" + coordinate + "]";
+    }
+
 }

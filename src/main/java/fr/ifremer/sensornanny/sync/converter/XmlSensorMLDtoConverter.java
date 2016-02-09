@@ -16,6 +16,7 @@ import net.opengis.gml.v_3_2_1.CoordinatesType;
 import net.opengis.sensorml.v_2_0.ComponentListType;
 import net.opengis.sensorml.v_2_0.ComponentListType.Component;
 import net.opengis.sensorml.v_2_0.IdentifierListPropertyType;
+import net.opengis.sensorml.v_2_0.IdentifierListType;
 import net.opengis.sensorml.v_2_0.IdentifierListType.Identifier;
 import net.opengis.sensorml.v_2_0.KeywordListPropertyType;
 import net.opengis.sensorml.v_2_0.OutputListType;
@@ -42,12 +43,17 @@ public class XmlSensorMLDtoConverter extends AbstractXMLConverter {
         ret.setName(extractFirstName(system.getName()));
         List<IdentifierListPropertyType> identification = system.getIdentification();
         for (IdentifierListPropertyType id : identification) {
-            List<Identifier> identifierList = id.getIdentifierList().getSMLIdentifier();
-            for (Identifier identifier : identifierList) {
-                TermType term = identifier.getTerm();
-                if (term != null) {
-                    ret.setUuid(term.getValue());
-                    break;
+            IdentifierListType list = id.getIdentifierList();
+            if (list != null) {
+                List<Identifier> identifierList = list.getSMLIdentifier();
+                if (CollectionUtils.isNotEmpty(identifierList)) {
+                    for (Identifier identifier : identifierList) {
+                        TermType term = identifier.getTerm();
+                        if (term != null) {
+                            ret.setUuid(term.getValue());
+                            break;
+                        }
+                    }
                 }
             }
             // Extract the terms of the system
@@ -107,14 +113,19 @@ public class XmlSensorMLDtoConverter extends AbstractXMLConverter {
             List<String> terms = new ArrayList<>();
             outputList.getOutput().forEach(new Consumer<Output>() {
                 public void accept(Output output) {
-                    if (output != null && output.getAbstractDataComponent() != null) {
-                        Object value = output.getAbstractDataComponent().getValue();
-                        if (value instanceof DataRecordType) {
-                            List<Field> fields = ((DataRecordType) value).getField();
-                            for (Field field : fields) {
-                                AbstractDataComponentType quantity = field.getAbstractDataComponent().getValue();
-                                terms.add(StringUtils.trimToNull(quantity.getDefinition()));
+                    if (output != null) {
+                        if (output.getAbstractDataComponent() != null) {
+                            Object value = output.getAbstractDataComponent().getValue();
+                            if (value instanceof DataRecordType) {
+                                List<Field> fields = ((DataRecordType) value).getField();
+                                for (Field field : fields) {
+                                    AbstractDataComponentType quantity = field.getAbstractDataComponent().getValue();
+                                    terms.add(StringUtils.trimToNull(quantity.getDefinition()));
+                                }
                             }
+
+                        } else if (StringUtils.isNotBlank(output.getHref())) {
+                            terms.add(StringUtils.trimToNull(output.getHref()));
                         }
                     }
                 };
@@ -129,7 +140,9 @@ public class XmlSensorMLDtoConverter extends AbstractXMLConverter {
 
                 @Override
                 public void accept(KeywordListPropertyType t) {
-                    keywords.addAll(t.getKeywordList().getKeyword());
+                    if (t.getKeywordList() != null) {
+                        keywords.addAll(t.getKeywordList().getKeyword());
+                    }
                 }
             });
             ret.setKeywords(keywords);

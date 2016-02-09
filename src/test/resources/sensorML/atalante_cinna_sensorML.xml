@@ -83,7 +83,7 @@
                             <swe:uom/>
                         </swe:Quantity>                        
                     </swe:field>
-		    <swe:field name="grdspeed">
+		    		<swe:field name="grdspeed">
                         <swe:Quantity definition="http://www.ifremer.fr/tematres/vocab/index.php?tema=117">
                             <swe:uom/>
                         </swe:Quantity>                        
