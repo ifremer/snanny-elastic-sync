@@ -7,6 +7,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -21,6 +22,8 @@ import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
  */
 public class JarLoader {
 
+    private static final Logger logger = Logger.getLogger(JarLoader.class.getName());
+
     /**
      * This method allow to discovers jars in a specific folder
      * 
@@ -28,6 +31,7 @@ public class JarLoader {
      * @return list of jar url in a folder
      */
     public static URL[] discoverJars(String folderPath) {
+        logger.info("Configure parsers in folder " + folderPath);
         if (StringUtils.isBlank(folderPath)) {
             throw new IllegalStateException("Unable to init parsers, the parameter parser.lib must be filled");
         }
@@ -82,6 +86,7 @@ public class JarLoader {
         List<T> items = new ArrayList<>();
         for (String className : namesOfClassesImplementing) {
             try {
+                logger.info("Found parser " + className);
                 items.add((T) parserClassLoader.loadClass(className).newInstance());
             } catch (Exception e) {
                 throw new IllegalStateException("Unable to instantiate class " + className, e);

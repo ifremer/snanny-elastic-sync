@@ -4,6 +4,7 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import com.google.inject.Inject;
 
@@ -20,6 +21,7 @@ import fr.ifremer.sensornanny.sync.util.JarLoader;
  */
 public class ParserManager {
 
+    private static final Logger logger = Logger.getLogger(ParserManager.class.getName());
     /**
      * List of parser loaded
      */
@@ -49,11 +51,14 @@ public class ParserManager {
      * @return parser which accept this format, if none return <code>null</code>
      */
     public IObservationParser getParser(ObservationData data) {
+        logger.info("Find parser for type " + data.getMimeType());
         for (IObservationParser parser : parsers) {
             if (parser.accept(data)) {
+                logger.info("Parser found for " + data.getMimeType() + " : " + parser.getClass());
                 return parser;
             }
         }
+        logger.warning("No parser found for " + data.getMimeType());
         return null;
     }
 
