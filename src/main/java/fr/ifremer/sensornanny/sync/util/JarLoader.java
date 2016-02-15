@@ -79,7 +79,7 @@ public class JarLoader {
         // Load classes
         URLClassLoader parserClassLoader = URLClassLoader.newInstance(urls, clazz.getClassLoader());
 
-        String urlStr = StringUtils.join(urls, ";");
+        String urlStr = StringUtils.join(urls, File.pathSeparator);
         List<String> namesOfClassesImplementing = new FastClasspathScanner(packagePrefix).overrideClasspath(urlStr)
                 .scan().getNamesOfClassesImplementing(clazz);
 
