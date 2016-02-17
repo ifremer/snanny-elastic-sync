@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -28,6 +29,7 @@ import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatus;
 import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatusResponse;
 import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
 import fr.ifremer.sensornanny.sync.dto.owncloud.SensorMLAncestors;
+import fr.ifremer.sensornanny.sync.report.ReportManager;
 
 /**
  * Implementation of the OwncloudApi
@@ -37,6 +39,7 @@ import fr.ifremer.sensornanny.sync.dto.owncloud.SensorMLAncestors;
  */
 public class OwncloudDaoImpl implements IOwncloudDao {
 
+    private static final Logger LOGGER = Logger.getLogger(OwncloudDaoImpl.class.getName());
     // OM endpoint
     private static final String OM_PATH = "/om/";
 
@@ -102,6 +105,8 @@ public class OwncloudDaoImpl implements IOwncloudDao {
             template.setErrorHandler(OwncloudRestErrorHandler.of(resourceName));
         }
 
+        LOGGER.info("Call " + uri);
+        ReportManager.log("Call " + uri);
         ResponseEntity<T> response = template.exchange(uri, HttpMethod.GET, createEntity(), clazz);
 
         return response.getBody();

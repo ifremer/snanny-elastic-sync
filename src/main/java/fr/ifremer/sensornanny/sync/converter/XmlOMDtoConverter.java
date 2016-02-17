@@ -40,8 +40,12 @@ public class XmlOMDtoConverter extends AbstractXMLConverter {
         for (Observation observation : observations) {
             OM om = new OM();
             OMObservationType omObservation = observation.getOMObservation();
-            om.setIdentifier(StringUtils.trimToNull(omObservation.getIdentifier().getValue()));
-            om.setDescription(StringUtils.trimToNull(omObservation.getDescription().getValue()));
+            if (omObservation.getIdentifier() != null) {
+                om.setIdentifier(StringUtils.trimToNull(omObservation.getIdentifier().getValue()));
+            }
+            if (omObservation.getDescription() != null) {
+                om.setDescription(StringUtils.trimToNull(omObservation.getDescription().getValue()));
+            }
             om.setName(extractFirstName(omObservation.getName()));
 
             TimeObjectPropertyType phnomenType = omObservation.getPhenomenonTime();
