@@ -10,6 +10,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.inject.Inject;
+import com.sun.org.apache.xerces.internal.dom.ElementNSImpl;
 
 import fr.ifremer.sensornanny.sync.dto.model.Axis;
 import fr.ifremer.sensornanny.sync.dto.model.OM;
@@ -31,6 +32,8 @@ import net.opengis.sos.v_2_0.InsertObservationType.Observation;
  */
 public class XmlOMDtoConverter extends AbstractXMLConverter {
 
+    private static final String XLINK_ROLE = "xlink:role";
+    private static final String XLINK_HREF = "xlink:href";
     @Inject
     protected XmlTimePeriodDateConverter timeConverter;
 
@@ -77,6 +80,9 @@ public class XmlOMDtoConverter extends AbstractXMLConverter {
             if (omObservationResult instanceof ReferenceType) {
                 omResult.setUrl(((ReferenceType) omObservationResult).getHref());
                 omResult.setRole(((ReferenceType) omObservationResult).getRole());
+            } else if (omObservationResult instanceof ElementNSImpl) {
+                omResult.setUrl(((ElementNSImpl) omObservationResult).getAttributeNode(XLINK_HREF).getValue());
+                omResult.setRole(((ElementNSImpl) omObservationResult).getAttributeNode(XLINK_ROLE).getValue());
             }
 
             om.setResult(omResult);

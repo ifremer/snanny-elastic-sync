@@ -76,4 +76,17 @@ public class OMParserTest extends UnitTest {
         Assert.assertEquals(expectedProcedure, om.getProcedure());
         Assert.assertEquals("application/netcdf", om.getResult().getRole());
     }
+
+    @Test
+    public void testParseFileArgo() throws Exception {
+
+        InputStream inputStream = load("argo/argo.xml");
+        JAXBElement<InsertObservationType> element = parser.parse(inputStream);
+        List<OM> results = converter.fromXML(element);
+
+        Assert.assertEquals(1, results.size());
+        OM om = results.get(0);
+
+        System.out.println(om);
+    }
 }
