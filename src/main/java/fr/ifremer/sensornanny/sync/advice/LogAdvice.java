@@ -1,6 +1,7 @@
 package fr.ifremer.sensornanny.sync.advice;
 
 import java.lang.reflect.Method;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.aopalliance.intercept.MethodInterceptor;
@@ -22,18 +23,22 @@ public class LogAdvice implements MethodInterceptor {
 
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
-        String threadName = Thread.currentThread().getName();
-        Method method = invocation.getMethod();
-        String methodName = method.getName();
-        String args = StringUtils.join(invocation.getArguments(), ",");
-        String className = method.getDeclaringClass().getSimpleName();
-        long timeBeforeCall = System.currentTimeMillis();
-        Object result = invocation.proceed();
-        System.currentTimeMillis();
-        long timeTook = System.currentTimeMillis() - timeBeforeCall;
-        LOGGER.info(String.format("[%s] Call %s#%s(%s) - Time : %d ms", threadName, className, methodName, args,
-                timeTook));
-        return result;
+        if (LOGGER.isLoggable(Level.FINE)) {
+            String threadName = Thread.currentThread().getName();
+            Method method = invocation.getMethod();
+            String methodName = method.getName();
+            String args = StringUtils.join(invocation.getArguments(), ",");
+            String className = method.getDeclaringClass().getSimpleName();
+            long timeBeforeCall = System.currentTimeMillis();
+            Object result = invocation.proceed();
+            System.currentTimeMillis();
+            long timeTook = System.currentTimeMillis() - timeBeforeCall;
+
+            LOGGER.log(Level.FINE, String.format("[%s] Call %s#%s(%s) - Time : %d ms", threadName, className,
+                    methodName, args, timeTook));
+            return result;
+        }
+        return invocation.proceed();
     }
 
 }
