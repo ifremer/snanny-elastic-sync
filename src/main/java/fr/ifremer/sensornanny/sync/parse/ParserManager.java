@@ -38,9 +38,11 @@ public class ParserManager {
         List<IObservationParser> foundParsers = JarLoader.scanForInterfaces(jars, IObservationParser.class,
                 "fr.ifremer");
         for (IObservationParser parser : foundParsers) {
-            if (Config.moduloForParser(parser.getClass()) > -1) {
-                parsers.add(parser);
-            }
+            if (Config.moduloForParser(parser.getClass()) > -1) {	        
+                parsers.add(parser);	    
+            }else{
+		logger.warning("No modulo configuration for parser: " + parser.getClass());
+	    }
         }
     }
 
@@ -51,9 +53,9 @@ public class ParserManager {
      * @return parser which accept this format, if none return <code>null</code>
      */
     public IObservationParser getParser(ObservationData data) {
-        logger.info("Find parser for type " + data.getMimeType());
+        logger.info("Searching parser for type " + data.getMimeType());
         for (IObservationParser parser : parsers) {
-            if (parser.accept(data)) {
+            if (parser.accept(data)) {		
                 logger.info("Parser found for " + data.getMimeType() + " : " + parser.getClass());
                 return parser;
             }
