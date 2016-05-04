@@ -1,15 +1,5 @@
 package fr.ifremer.sensornanny.sync.dao;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import fr.ifremer.sensornanny.sync.base.IntegrationTest;
 import fr.ifremer.sensornanny.sync.base.UnitTest;
 import fr.ifremer.sensornanny.sync.dao.impl.OwncloudDaoImpl;
@@ -17,6 +7,15 @@ import fr.ifremer.sensornanny.sync.dto.owncloud.Content;
 import fr.ifremer.sensornanny.sync.dto.owncloud.FileSizeInfo;
 import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatus;
 import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 @Category(IntegrationTest.class)
 public class OwncloudDaoTest extends UnitTest {
@@ -63,7 +62,7 @@ public class OwncloudDaoTest extends UnitTest {
 
     @Test
     public void testGetAncestors() {
-        List<String> ancestors = dao.getAncestors("7764633d-499b-4a17-bade-6059beabc229");
+        List<String> ancestors = dao.getAncestors("7764633d-499b-4a17-bade-6059beabc229", null, null);
         Assert.assertNotNull("ancestors must not be null", ancestors);
         Assert.assertEquals(1, ancestors.size());
     }

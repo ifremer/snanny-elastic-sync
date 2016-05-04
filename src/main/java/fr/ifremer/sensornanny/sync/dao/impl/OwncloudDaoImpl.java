@@ -1,5 +1,17 @@
 package fr.ifremer.sensornanny.sync.dao.impl;
 
+import fr.ifremer.sensornanny.sync.config.Config;
+import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
+import fr.ifremer.sensornanny.sync.dao.rest.DataNotFoundException;
+import fr.ifremer.sensornanny.sync.dao.rest.OwncloudRestErrorHandler;
+import fr.ifremer.sensornanny.sync.dto.owncloud.*;
+import fr.ifremer.sensornanny.sync.report.ReportManager;
+import org.springframework.http.*;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.GsonHttpMessageConverter;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URLConnection;
@@ -9,31 +21,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.GsonHttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import fr.ifremer.sensornanny.sync.config.Config;
-import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
-import fr.ifremer.sensornanny.sync.dao.rest.DataNotFoundException;
-import fr.ifremer.sensornanny.sync.dao.rest.OwncloudRestErrorHandler;
-import fr.ifremer.sensornanny.sync.dto.owncloud.Content;
-import fr.ifremer.sensornanny.sync.dto.owncloud.FileSizeInfo;
-import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatus;
-import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatusResponse;
-import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
-import fr.ifremer.sensornanny.sync.dto.owncloud.SensorMLAncestors;
-import fr.ifremer.sensornanny.sync.report.ReportManager;
-
 /**
  * Implementation of the OwncloudApi
- * 
+ *
  * @author athorel
  *
  */
@@ -55,6 +45,8 @@ public class OwncloudDaoImpl implements IOwncloudDao {
     private static final String FROM_PARAMETER = "from";
     private static final String FILES_SERVICES = "/files";
     private static final String FILES_FAILURE_SERVICES = "/lastfailure";
+    private static final String BEGINTIME_PARAMETER = "beginTime";
+    private static final String ENDTIME_PARAMETER = "endTime";
 
     @Override
     public List<OwncloudSyncModel> getActivities(Date from, Date to) {
@@ -94,7 +86,7 @@ public class OwncloudDaoImpl implements IOwncloudDao {
 
     /**
      * Allow to call rest template using headers with authentication
-     * 
+     *
      * @param uri URI to acces with
      * @param clazz returned class
      * @return result of the get action
@@ -115,7 +107,7 @@ public class OwncloudDaoImpl implements IOwncloudDao {
 
     /**
      * Allow to call rest template using headers with authentication
-     * 
+     *
      * @param uri URI to acces with
      * @param clazz returned class
      * @return result of the get action
@@ -156,6 +148,16 @@ public class OwncloudDaoImpl implements IOwncloudDao {
     }
 
     @Override
+    public String getSML(String uuid, Date startTime, Date endTime) {
+        URI uri = UriComponentsBuilder.fromHttpUrl(Config.smlEndpoint() + uuid)
+                .queryParam("pretty", false)
+                .queryParam("startTime", startTime != null ? startTime.getTime() : null)
+                .queryParam("endTime", endTime != null ? endTime.getTime() : null)
+                .build().encode().toUri();
+        return get(uri, String.class, null, "SML " + uri.toString());
+    }
+
+    @Override
     public InputStream getResultData(String uuid) throws DataNotFoundException {
         URI uri = UriComponentsBuilder.fromHttpUrl(Config.owncloudEndpoint()).path(OM_PATH).path(uuid).path("/stream")
                 .build().encode().toUri();
@@ -180,8 +182,15 @@ public class OwncloudDaoImpl implements IOwncloudDao {
     }
 
     @Override
-    public List<String> getAncestors(String uuid) {
-        URI uri = UriComponentsBuilder.fromHttpUrl(Config.smlEndpoint() + uuid + ANCESTORS).build().encode().toUri();
+    public List<String> getAncestors(String uuid, Date beginPosition, Date endPosition) {
+        Long beginTime = beginPosition != null ? beginPosition.getTime() : null;
+        Long endTime = endPosition != null ? endPosition.getTime() : null;
+        URI uri = UriComponentsBuilder.fromHttpUrl(Config.smlEndpoint() + uuid + ANCESTORS)
+                // beginTime
+                .queryParam(BEGINTIME_PARAMETER, beginTime)
+                        // endTimeTime
+                .queryParam(ENDTIME_PARAMETER, endTime)
+                .build().encode().toUri();
         SensorMLAncestors result = get(uri, SensorMLAncestors.class, new GsonHttpMessageConverter(), "SML " + uri
                 .toString());
         return result.getAncestors();
