@@ -7,7 +7,7 @@ import fr.ifremer.sensornanny.sync.cache.impl.TermCacheManager;
 import fr.ifremer.sensornanny.sync.converter.PermissionsConverter;
 import fr.ifremer.sensornanny.sync.converter.XmlOMDtoConverter;
 import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
-import fr.ifremer.sensornanny.sync.dao.rest.DataNotFoundException;
+import fr.ifremer.sensornanny.sync.dao.rest.SensorNotFoundException;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.Ancestor;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.Coordinates;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.ObservationJson;
@@ -36,9 +36,8 @@ import java.util.logging.Logger;
 
 /**
  * Implementation of observation delegate processor
- * 
- * @author athorel
  *
+ * @author athorel
  */
 public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
 
@@ -92,7 +91,7 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
 
     /**
      * Called on Index a new file
-     * 
+     *
      * @param fileInfo fileInfo to index
      */
     private void onIndex(OwncloudSyncModel fileInfo) {
@@ -121,17 +120,29 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
                 // Retrieve the observation result and parse it
                 OMResult observationResult = observation.getResult();
                 // Retrieve the sensorML
-                SensorML sensor = cacheSystem.getData(systemUuid, observation.getBeginPosition(), observation.getEndPosition());
-                if (sensor == null) {
-                    throw new DataNotFoundException("Unable to find SML " + systemUuid);
-                }
+                final SensorML sensor = cacheSystem.getData(systemUuid, observation.getBeginPosition(), observation.getEndPosition());
 
-                Axis axis = sensor.getCoordinate();
+                final Axis axis = sensor != null ? sensor.getCoordinate() : null;
 
                 observationDataManager.readData(fileInfo.getUuid(), observationResult, new Consumer<TimePosition>() {
 
+                    SensorML usedSensor = sensor;
+                    Axis usedAxis = axis;
+
                     @Override
                     public void accept(TimePosition timePosition) {
+
+                        // Si le system n'a pas été trouvé via les dates de l'observation, on essaye de le
+                        // trouver via la date de la prmière position
+                        if (usedSensor == null) {
+                            usedSensor = cacheSystem.getData(systemUuid, timePosition.getDate(), timePosition.getDate());
+                        }
+                        if (usedSensor == null) {
+                            throw new SensorNotFoundException("Unable to find SML " + systemUuid);
+                        }
+                        if (usedAxis == null) {
+                            usedAxis = usedSensor.getCoordinate();
+                        }
 
                         ObservationJson item = new ObservationJson();
                         String identifier = observation.getIdentifier();
@@ -152,10 +163,10 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
                             coordinates.setLat(timePosition.getLatitude());
                             coordinates.setLon(timePosition.getLongitude());
                             item.setDepth(timePosition.getDepth());
-                        } else if (axis != null) {
-                            coordinates.setLat(axis.getLat().doubleValue());
-                            coordinates.setLon(axis.getLon().doubleValue());
-                            item.setDepth(axis.getDep());
+                        } else if (usedAxis != null) {
+                            coordinates.setLat(usedAxis.getLat().doubleValue());
+                            coordinates.setLon(usedAxis.getLon().doubleValue());
+                            item.setDepth(usedAxis.getDep());
                         }
                         item.setCoordinates(coordinates);
 
@@ -186,8 +197,8 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
 
     /**
      * Allow to fil the ancestor
-     * 
-     * @param item item to fill
+     *
+     * @param item       item to fill
      * @param systemUuid system UUID
      * @throws Exception Exception while getting system
      */
@@ -233,7 +244,7 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
 
     /**
      * This method allow to extract terms and transform references to real term
-     * 
+     *
      * @param termsHrefs list of references {@Example http://www.ifremer.fr/tematres/vocab/index.php?tema=125}
      * @return list of real terms
      */
