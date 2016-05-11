@@ -1,14 +1,14 @@
 package fr.ifremer.sensornanny.sync.dao;
 
-import java.io.InputStream;
-import java.util.Date;
-import java.util.List;
-
 import fr.ifremer.sensornanny.sync.dao.rest.DataNotFoundException;
 import fr.ifremer.sensornanny.sync.dto.owncloud.Content;
 import fr.ifremer.sensornanny.sync.dto.owncloud.FileSizeInfo;
 import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatus;
 import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
+
+import java.io.InputStream;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Owncloud interface for data-access
@@ -51,6 +51,16 @@ public interface IOwncloudDao {
     String getSML(String uuid);
 
     /**
+     * Retrieve the sml content from uuid
+     *
+     * @param uuid uuid of the system
+     * @param startTime start
+     * @param endTime end
+     * @return element from the system
+     */
+    String getSML(String uuid, Date startTime, Date endTime);
+
+    /**
      * Retrieve the result file from an OM
      * 
      * @param uuid unique identifier of the OM
@@ -70,9 +80,11 @@ public interface IOwncloudDao {
      * Retrieve the ancestors of a system
      * 
      * @param uuid system UUID
+     * @param beginPosition : date de début de l'observation
+     * @param endPosition : date de fin de l'observation
      * @return list of ancestors, otherwise <code>null</code>
      */
-    List<String> getAncestors(String uuid);
+    List<String> getAncestors(String uuid, Date beginPosition, Date endPosition);
 
     /**
      * Update indexation status to owncloud as feedback information to the owncloud user
