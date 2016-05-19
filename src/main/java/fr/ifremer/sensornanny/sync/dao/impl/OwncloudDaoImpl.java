@@ -25,7 +25,6 @@ import java.util.logging.Logger;
  * Implementation of the OwncloudApi
  *
  * @author athorel
- *
  */
 public class OwncloudDaoImpl implements IOwncloudDao {
 
@@ -53,9 +52,9 @@ public class OwncloudDaoImpl implements IOwncloudDao {
         URI uri = UriComponentsBuilder.fromHttpUrl(Config.owncloudEndpoint() + FILES_SERVICES)
                 // From
                 .queryParam(FROM_PARAMETER, from.getTime() / 1000)
-                // To
+                        // To
                 .queryParam(TO_PARAMETER, to.getTime() / 1000)
-                // GetUri
+                        // GetUri
                 .build().encode().toUri();
 
         OwncloudSyncModel[] activities = get(uri, OwncloudSyncModel[].class, new GsonHttpMessageConverter(), null);
@@ -78,7 +77,7 @@ public class OwncloudDaoImpl implements IOwncloudDao {
         URI uri = UriComponentsBuilder.fromHttpUrl(Config.owncloudEndpoint()).path(OM_PATH)
                 // With id
                 .path(uuid)
-                // GetUri
+                        // GetUri
                 .build().encode().toUri();
 
         return get(uri, Content.class, new GsonHttpMessageConverter(), null);
@@ -87,7 +86,7 @@ public class OwncloudDaoImpl implements IOwncloudDao {
     /**
      * Allow to call rest template using headers with authentication
      *
-     * @param uri URI to acces with
+     * @param uri   URI to acces with
      * @param clazz returned class
      * @return result of the get action
      */
@@ -108,7 +107,7 @@ public class OwncloudDaoImpl implements IOwncloudDao {
     /**
      * Allow to call rest template using headers with authentication
      *
-     * @param uri URI to acces with
+     * @param uri   URI to acces with
      * @param clazz returned class
      * @return result of the get action
      */
@@ -149,11 +148,14 @@ public class OwncloudDaoImpl implements IOwncloudDao {
 
     @Override
     public String getSML(String uuid, Date startTime, Date endTime) {
-        URI uri = UriComponentsBuilder.fromHttpUrl(Config.smlEndpoint() + uuid)
-                .queryParam("pretty", false)
-                .queryParam("startTime", startTime != null ? startTime.getTime() : null)
-                .queryParam("endTime", endTime != null ? endTime.getTime() : null)
-                .build().encode().toUri();
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(Config.smlEndpoint() + uuid);
+        if (startTime != null) {
+            builder.queryParam("startTime", startTime.getTime());
+        }
+        if (endTime != null) {
+            builder.queryParam("endTime", endTime.getTime());
+        }
+        URI uri = builder.build().encode().toUri();
         return get(uri, String.class, null, "SML " + uri.toString());
     }
 

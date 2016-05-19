@@ -126,14 +126,14 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
 
                 observationDataManager.readData(fileInfo.getUuid(), observationResult, new Consumer<TimePosition>() {
 
-                    SensorML usedSensor = sensor;
-                    Axis usedAxis = axis;
+                    private SensorML usedSensor = sensor;
+                    private Axis usedAxis = axis;
 
                     @Override
                     public void accept(TimePosition timePosition) {
 
-                        // Si le system n'a pas été trouvé via les dates de l'observation, on essaye de le
-                        // trouver via la date de la prmière position
+                        // Si le system n'a pas ï¿½tï¿½ trouvï¿½ via les dates de l'observation, on essaye de le
+                        // trouver via la date de la prmiï¿½re position
                         if (usedSensor == null) {
                             usedSensor = cacheSystem.getData(systemUuid, timePosition.getDate(), timePosition.getDate());
                         }
