@@ -4,9 +4,18 @@ import fr.ifremer.sensornanny.sync.config.Config;
 import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
 import fr.ifremer.sensornanny.sync.dao.rest.DataNotFoundException;
 import fr.ifremer.sensornanny.sync.dao.rest.OwncloudRestErrorHandler;
-import fr.ifremer.sensornanny.sync.dto.owncloud.*;
+import fr.ifremer.sensornanny.sync.dto.owncloud.Content;
+import fr.ifremer.sensornanny.sync.dto.owncloud.FileSizeInfo;
+import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatus;
+import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatusResponse;
+import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
+import fr.ifremer.sensornanny.sync.dto.owncloud.SensorMLAncestors;
 import fr.ifremer.sensornanny.sync.report.ReportManager;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.GsonHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
@@ -17,6 +26,7 @@ import java.net.URI;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -149,11 +159,14 @@ public class OwncloudDaoImpl implements IOwncloudDao {
     @Override
     public String getSML(String uuid, Date startTime, Date endTime) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(Config.smlEndpoint() + uuid);
+        Calendar calendar = Calendar.getInstance();
         if (startTime != null) {
-            builder.queryParam("startTime", startTime.getTime());
+            calendar.setTime(startTime);
+            builder.queryParam("startTime", (calendar.getTimeInMillis() + calendar.getTimeZone().getRawOffset()) / 1000);
         }
         if (endTime != null) {
-            builder.queryParam("endTime", endTime.getTime());
+            calendar.setTime(endTime);
+            builder.queryParam("endTime", (calendar.getTimeInMillis() + calendar.getTimeZone().getRawOffset()) / 1000);
         }
         URI uri = builder.build().encode().toUri();
         return get(uri, String.class, null, "SML " + uri.toString());
