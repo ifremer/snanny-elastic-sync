@@ -11,6 +11,10 @@ import com.google.gson.annotations.SerializedName;
  *
  */
 public class Ancestor {
+
+    /** Unique identifier of the system observations */
+    @SerializedName("snanny-ancestor-deploymentid")
+    private String deploymentId;
     /** Unique identifier of the system */
     @SerializedName("snanny-ancestor-uuid")
     private String uuid;
@@ -26,6 +30,14 @@ public class Ancestor {
     /** Keywords */
     @SerializedName("snanny-ancestor-keywords")
     private List<String> keywords;
+
+    public String getDeploymentId() {
+        return deploymentId;
+    }
+
+    public void setDeploymentId(String deploymentId) {
+        this.deploymentId = deploymentId;
+    }
 
     public void setUuid(String uuid) {
         this.uuid = uuid;

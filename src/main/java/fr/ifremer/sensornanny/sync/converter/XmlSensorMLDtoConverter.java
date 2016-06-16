@@ -1,20 +1,14 @@
 package fr.ifremer.sensornanny.sync.converter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-
-import javax.xml.bind.JAXBElement;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import fr.ifremer.sensornanny.sync.dto.model.Axis;
 import fr.ifremer.sensornanny.sync.dto.model.Comp;
 import fr.ifremer.sensornanny.sync.dto.model.SensorML;
 import net.opengis.gml.v_3_2_1.CoordinatesType;
+import net.opengis.gml.v_3_2_1.TimePeriodType;
+import net.opengis.gml.v_3_2_1.TimePositionType;
 import net.opengis.sensorml.v_2_0.ComponentListType;
 import net.opengis.sensorml.v_2_0.ComponentListType.Component;
+import net.opengis.sensorml.v_2_0.DescribedObjectType;
 import net.opengis.sensorml.v_2_0.IdentifierListPropertyType;
 import net.opengis.sensorml.v_2_0.IdentifierListType;
 import net.opengis.sensorml.v_2_0.IdentifierListType.Identifier;
@@ -27,14 +21,26 @@ import net.opengis.sensorml.v_2_0.TermType;
 import net.opengis.swecommon.v_2_0.AbstractDataComponentType;
 import net.opengis.swecommon.v_2_0.DataRecordType;
 import net.opengis.swecommon.v_2_0.DataRecordType.Field;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.xml.bind.JAXBElement;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Convertor from XML to SensorMLDto
- * 
- * @author athorel
  *
+ * @author athorel
  */
 public class XmlSensorMLDtoConverter extends AbstractXMLConverter {
+
+    public static final String YYYY_MM_DD_THH_MM_SS_Z = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+    private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(YYYY_MM_DD_THH_MM_SS_Z);
 
     public SensorML fromXML(JAXBElement<PhysicalSystemType> xml) {
         SensorML ret = new SensorML();
@@ -62,6 +68,8 @@ public class XmlSensorMLDtoConverter extends AbstractXMLConverter {
             extractComponents(ret, system);
             // Extract the position of the system
             extractPosition(ret, system);
+            // Extract the times
+            extractTimes(ret, system);
         }
         return ret;
     }
@@ -128,7 +136,9 @@ public class XmlSensorMLDtoConverter extends AbstractXMLConverter {
                             terms.add(StringUtils.trimToNull(output.getHref()));
                         }
                     }
-                };
+                }
+
+                ;
 
             });
             ret.setTerms(terms);
@@ -147,6 +157,46 @@ public class XmlSensorMLDtoConverter extends AbstractXMLConverter {
             });
             ret.setKeywords(keywords);
         }
+    }
+
+    private void extractTimes(SensorML ret, PhysicalSystemType system) {
+        List<DescribedObjectType.ValidTime> validTimes = system.getValidTime();
+        validTimes.stream().findFirst().ifPresent(validTime -> {
+            TimePeriodType timePeriod = validTime.getTimePeriod();
+            if (timePeriod != null) {
+                TimePositionType beginPosition = timePeriod.getBeginPosition();
+                TimePositionType endPosition = timePeriod.getEndPosition();
+                Long startTime = parseSmlDate(beginPosition, true);
+                Long endTime = parseSmlDate(endPosition, false);
+                ret.setStartTime(startTime);
+                ret.setEndTime(endTime);
+            }
+        });
+    }
+
+    private Long parseSmlDate(TimePositionType timePositionType, boolean start) {
+        Long result = null;
+        if (timePositionType != null) {
+            ZoneId zoneId = ZoneId.of("UTC");
+            String timeStr = timePositionType.getValue().stream().findFirst().get();
+            String dateComplement = null;
+            if (timeStr.matches("^[\\d]{4}$")) {
+                if (start) {
+                    dateComplement = "-01-01T00:00:00Z";
+                } else {
+                    dateComplement = "-12-31T00:00:00Z";
+                }
+
+            } else if (timeStr.matches("^[\\d]{4}-[\\d]{2}-[\\d]{2}$")) {
+                dateComplement = "T00:00:00Z";
+            } else if (timeStr.matches("^[\\d]{4}-[\\d]{2}-[\\d]{2}T[\\d]{2}:[\\d]{2}:[\\d]{2}[Z]{0,1}$")) {
+                dateComplement = timeStr.endsWith("Z") ? "" : "Z";
+            }
+            result = dateComplement != null ? LocalDateTime.parse(timeStr + dateComplement, dateTimeFormatter)
+                    .atZone(zoneId).toEpochSecond()
+                    : null;
+        }
+        return result;
     }
 
 }

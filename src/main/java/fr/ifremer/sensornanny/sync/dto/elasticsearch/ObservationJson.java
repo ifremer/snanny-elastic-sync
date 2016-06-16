@@ -14,7 +14,10 @@ import com.google.gson.annotations.SerializedName;
  */
 public class ObservationJson {
 
-    /** Unique identifier of the observations */
+    /** Unique identifier of the ancestor observations */
+    @SerializedName("snanny-deploymentid")
+    private String deploymentId;
+    /** System uuid **/
     @SerializedName("snanny-uuid")
     private String uuid;
     /** Coordinates of the observation */
@@ -50,6 +53,14 @@ public class ObservationJson {
 
     @SerializedName("snanny-access")
     private Permission permission;
+
+    public String getDeploymentId() {
+        return deploymentId;
+    }
+
+    public void setDeploymentId(String deploymentId) {
+        this.deploymentId = deploymentId;
+    }
 
     public String getUuid() {
         return uuid;
@@ -149,7 +160,11 @@ public class ObservationJson {
 
     @Override
     public String toString() {
-        return "ObservationJson [uuid=" + uuid + ", name=" + name + ", description=" + description + "]";
+        return "ObservationJson{" +
+                "deploymentId='" + deploymentId + '\'' +
+                ", uuid='" + uuid + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                '}';
     }
-
 }

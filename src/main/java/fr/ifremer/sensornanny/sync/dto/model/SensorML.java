@@ -18,6 +18,10 @@ public class SensorML {
     private List<Comp> components;
     /** axis of the system */
     private Axis coordinate;
+    /** start time of the system **/
+    private Long startTime;
+    /** end time of the system **/
+    private Long endTime;
 
     public String getUuid() {
         return uuid;
@@ -75,10 +79,34 @@ public class SensorML {
         this.keywords = keywords;
     }
 
-    @Override
-    public String toString() {
-        return "SensorML [uuid=" + uuid + ", name=" + name + ", description=" + description + ", terms=" + terms
-                + ", keywords=" + keywords + ", components=" + components + ", coordinate=" + coordinate + "]";
+    public Long getStartTime() {
+        return startTime;
     }
 
+    public void setStartTime(Long startTime) {
+        this.startTime = startTime;
+    }
+
+    public Long getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(Long endTime) {
+        this.endTime = endTime;
+    }
+
+    @Override
+    public String toString() {
+        return "SensorML{" +
+                "uuid='" + uuid + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", terms=" + terms +
+                ", keywords=" + keywords +
+                ", components=" + components +
+                ", coordinate=" + coordinate +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                '}';
+    }
 }

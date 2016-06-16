@@ -12,7 +12,11 @@ import fr.ifremer.sensornanny.sync.dto.elasticsearch.Ancestor;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.Coordinates;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.ObservationJson;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.Permission;
-import fr.ifremer.sensornanny.sync.dto.model.*;
+import fr.ifremer.sensornanny.sync.dto.model.Axis;
+import fr.ifremer.sensornanny.sync.dto.model.OM;
+import fr.ifremer.sensornanny.sync.dto.model.OMResult;
+import fr.ifremer.sensornanny.sync.dto.model.SensorML;
+import fr.ifremer.sensornanny.sync.dto.model.Term;
 import fr.ifremer.sensornanny.sync.dto.owncloud.Content;
 import fr.ifremer.sensornanny.sync.dto.owncloud.IndexStatus;
 import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
@@ -30,6 +34,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -158,6 +163,8 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
                         // Get the timestamp
                         item.setResultTimestamp(timePosition.getDate());
 
+                        item.setDeploymentId(String.valueOf(Objects.hash(identifier, usedSensor.getUuid(), usedSensor.getStartTime(), usedSensor.getEndTime())));
+
                         Coordinates coordinates = new Coordinates();
                         if (timePosition.getLatitude() != null && timePosition.getLongitude() != null) {
                             coordinates.setLat(timePosition.getLatitude());
@@ -221,6 +228,7 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
                         ancestor.setName(compSensorML.getName());
                         ancestor.setTerms(getTerms(compSensorML.getTerms()));
                         ancestor.setKeywords(compSensorML.getKeywords());
+                        ancestor.setDeploymentId(String.valueOf(Objects.hash(compSensorML.getUuid(), compSensorML.getStartTime(), compSensorML.getEndTime())));
                         systemAncestors.add(ancestor);
                     } else {
                         LOGGER.warning("Unable to get sensorML ancestor : " + parentAncestor);
@@ -236,6 +244,7 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
                 ancestor.setName(system.getName());
                 ancestor.setTerms(getTerms(system.getTerms()));
                 ancestor.setKeywords(system.getKeywords());
+                ancestor.setDeploymentId(String.valueOf(Objects.hash(system.getUuid(), system.getStartTime(), system.getEndTime())));
                 systemAncestors.add(ancestor);
             }
         }

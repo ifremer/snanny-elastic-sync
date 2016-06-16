@@ -44,6 +44,10 @@ public class SensorMLParserTest extends UnitTest {
         Assert.assertEquals("http://ubisi54.ifremer.fr:8080/sensornanny/record/6c6bf0c8-334d-48db-bda5-297b642a097b",
                 sensorML.getComponents().get(1).getHref());
         Assert.assertNull(sensorML.getTerms());
+        Assert.assertNotNull(sensorML.getStartTime());
+        Assert.assertNotNull(sensorML.getEndTime());
+        Assert.assertEquals(599616000, sensorML.getStartTime().longValue());
+        Assert.assertEquals(1419984000, sensorML.getEndTime().longValue());
     }
 
     @Test
@@ -115,4 +119,48 @@ public class SensorMLParserTest extends UnitTest {
         Assert.assertNotNull("sensorML must not be null", sensorML);
     }
 
+    @Test
+    public void testParseDatedFile() throws Exception {
+        InputStream inputStream = load("sensorML/atalante_dated_sensorML.xml");
+        JAXBElement<PhysicalSystemType> element = parser.parse(inputStream);
+        Assert.assertNotNull("element must not be null", element);
+
+        SensorML sensorML = converter.fromXML(element);
+
+
+        Assert.assertNotNull(sensorML.getStartTime());
+        Assert.assertNotNull(sensorML.getEndTime());
+        Assert.assertEquals(599616000, sensorML.getStartTime().longValue());
+        Assert.assertEquals(1419984000, sensorML.getEndTime().longValue());
+    }
+
+    @Test
+    public void testParseTimedFile() throws Exception {
+        InputStream inputStream = load("sensorML/atalante_timed_sensorML.xml");
+        JAXBElement<PhysicalSystemType> element = parser.parse(inputStream);
+        Assert.assertNotNull("element must not be null", element);
+
+        SensorML sensorML = converter.fromXML(element);
+
+
+        Assert.assertNotNull(sensorML.getStartTime());
+        Assert.assertNotNull(sensorML.getEndTime());
+        Assert.assertEquals(599616000, sensorML.getStartTime().longValue());
+        Assert.assertEquals(1419984000, sensorML.getEndTime().longValue());
+    }
+
+    @Test
+    public void testParseZonedFile() throws Exception {
+        InputStream inputStream = load("sensorML/atalante_zoned_sensorML.xml");
+        JAXBElement<PhysicalSystemType> element = parser.parse(inputStream);
+        Assert.assertNotNull("element must not be null", element);
+
+        SensorML sensorML = converter.fromXML(element);
+
+
+        Assert.assertNotNull(sensorML.getStartTime());
+        Assert.assertNotNull(sensorML.getEndTime());
+        Assert.assertEquals(599616000, sensorML.getStartTime().longValue());
+        Assert.assertEquals(1419984000, sensorML.getEndTime().longValue());
+    }
 }

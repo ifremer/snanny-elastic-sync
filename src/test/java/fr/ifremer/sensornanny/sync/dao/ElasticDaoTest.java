@@ -1,8 +1,12 @@
 package fr.ifremer.sensornanny.sync.dao;
 
-import java.util.Arrays;
-import java.util.Calendar;
-
+import fr.ifremer.sensornanny.sync.base.IntegrationTest;
+import fr.ifremer.sensornanny.sync.config.Config;
+import fr.ifremer.sensornanny.sync.dao.impl.ElasticDaoImpl;
+import fr.ifremer.sensornanny.sync.dto.elasticsearch.Ancestor;
+import fr.ifremer.sensornanny.sync.dto.elasticsearch.Coordinates;
+import fr.ifremer.sensornanny.sync.dto.elasticsearch.ObservationJson;
+import fr.ifremer.sensornanny.sync.manager.NodeManager;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
@@ -13,13 +17,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import fr.ifremer.sensornanny.sync.base.IntegrationTest;
-import fr.ifremer.sensornanny.sync.config.Config;
-import fr.ifremer.sensornanny.sync.dao.impl.ElasticDaoImpl;
-import fr.ifremer.sensornanny.sync.dto.elasticsearch.Ancestor;
-import fr.ifremer.sensornanny.sync.dto.elasticsearch.Coordinates;
-import fr.ifremer.sensornanny.sync.dto.elasticsearch.ObservationJson;
-import fr.ifremer.sensornanny.sync.manager.NodeManager;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Objects;
 
 @Category(IntegrationTest.class)
 public class ElasticDaoTest extends IntegrationTest {
@@ -35,6 +35,7 @@ public class ElasticDaoTest extends IntegrationTest {
         for (int i = 0; i < 100; i++) {
 
             ObservationJson observation = new ObservationJson();
+
             observation.setUuid("abcdefg-" + String.format("%010d", i));
             observation.setAuthor("athorel");
             observation.setDescription("description bob");
@@ -42,6 +43,8 @@ public class ElasticDaoTest extends IntegrationTest {
             observation.setResultTimestamp(Calendar.getInstance().getTime());
             observation.setUpdateTimestamp(Calendar.getInstance().getTime());
             observation.setFamily("family");
+
+            observation.setDeploymentId(String.valueOf(Objects.hash(observation.getUuid())));
 
             Coordinates coordinates = new Coordinates();
             double caze = Math.random();
