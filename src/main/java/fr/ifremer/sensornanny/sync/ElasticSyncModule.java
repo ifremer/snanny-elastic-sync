@@ -31,6 +31,7 @@ import fr.ifremer.sensornanny.sync.writer.IElasticWriter;
 import fr.ifremer.sensornanny.sync.writer.impl.ElasticWriterImpl;
 
 /**
+ * the
  * Guice Injectors module that allow creation of singleton dependencies
  * 
  * @author athorel

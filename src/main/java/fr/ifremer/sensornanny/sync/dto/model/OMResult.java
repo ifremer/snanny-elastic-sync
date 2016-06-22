@@ -28,4 +28,9 @@ public class OMResult {
         this.role = role;
     }
 
+    @Override
+    public String toString() {
+        return "OMResult [url=" + url + ", role=" + role + "]";
+    }
+
 }

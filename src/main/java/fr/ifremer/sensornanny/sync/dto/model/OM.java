@@ -114,4 +114,11 @@ public class OM {
         this.updateDate = updateDate;
     }
 
+    @Override
+    public String toString() {
+        return "OM [identifier=" + identifier + ", name=" + name + ", description=" + description + ", lowerCorner="
+                + lowerCorner + ", upperCorner=" + upperCorner + ", beginPosition=" + beginPosition + ", endPosition="
+                + endPosition + ", updateDate=" + updateDate + ", procedure=" + procedure + ", result=" + result + "]";
+    }
+
 }
