@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -40,6 +41,8 @@ import java.util.function.Consumer;
  */
 public class XmlSensorMLDtoConverter extends AbstractXMLConverter {
 
+	private static final ZoneId DEFAULT_ZONE = ZoneId.of("UTC");
+	private static final String DEFAULT_TIME = "3000-12-31T00:00:00";
 	public static final String YYYY_MM_DD_THH_MM_SS_Z = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 	private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(YYYY_MM_DD_THH_MM_SS_Z);
 
@@ -168,12 +171,12 @@ public class XmlSensorMLDtoConverter extends AbstractXMLConverter {
 				TimePositionType beginPosition = timePeriod.getBeginPosition();
 				TimePositionType endPosition = timePeriod.getEndPosition();
 				Long startTime = parseSmlDate(beginPosition, true);
-				if(startTime != null){
+				if (startTime != null) {
 					ret.setStartTime(startTime);
 					Long endTime = parseSmlDate(endPosition, false);
 					ret.setEndTime(endTime);
-					if(endTime == null){
-						ret.setEndTime(startTime);
+					if (endTime == null) {
+						ret.setEndTime(LocalDateTime.parse(DEFAULT_TIME).atZone(DEFAULT_ZONE).toEpochSecond());
 					}
 				}
 			}
@@ -183,7 +186,7 @@ public class XmlSensorMLDtoConverter extends AbstractXMLConverter {
 	private Long parseSmlDate(TimePositionType timePositionType, boolean start) {
 		Long result = null;
 		if (timePositionType != null) {
-			ZoneId zoneId = ZoneId.of("UTC");
+			ZoneId zoneId = DEFAULT_ZONE;
 			Optional<String> date = timePositionType.getValue().stream().findFirst();
 			if (date.isPresent()) {
 				String timeStr = date.get();
