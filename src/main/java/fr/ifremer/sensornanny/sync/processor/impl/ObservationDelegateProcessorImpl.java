@@ -46,7 +46,7 @@ import java.util.logging.Logger;
  */
 public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
 
-	private static final String DEPLOYMENT_ID_SEPARATOR = "#";
+	private static final String DEPLOYMENT_ID_SEPARATOR = "_";
 
 	private static final Logger LOGGER = Logger.getLogger(ObservationDelegateProcessorImpl.class.getName());
 
