@@ -207,9 +207,9 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
 
     }
 
-    private Axis getFirstValidAxisInSML(List<Ancestor> ancestors, Date start, Date end) {
+    protected Axis getFirstValidAxisInSML(List<Ancestor> ancestors, Date start, Date end) {
         if (ancestors != null) {
-            for (int i = ancestors.size() - 1; i > 0; i--) {
+            for (int i = ancestors.size() - 1; i >= 0; i--) {
                 Ancestor ancestor = ancestors.get(i);
                 SensorML data = cacheSystem.getData(ancestor.getUuid(), start, end);
                 if (data != null && data.getCoordinate() != null) {
