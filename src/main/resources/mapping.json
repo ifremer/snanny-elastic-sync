@@ -1,92 +1,85 @@
 {
-  "snanny-observation": {
-    "_source": {
-      "includes": [
-        "meta.*",
-        "doc.*"
-      ]
+  "properties": {
+    "snanny-deploymentid": {
+      "type": "string"
     },
-    "properties": {
-      "meta": {
-        "include_in_all": false,
-        "type": "object"
-      },
-      "doc": {
-        "properties": {
-          "snanny-resulttimestamp": {
-            "type": "date",
-            "ignore_malformed" : true
-          },
-          "snanny-updatetimestamp": {
-            "type": "date",
-            "ignore_malformed" : true
-          },
-          "snanny-ancestors": {
-            "properties": {
-              "snanny-ancestor-deploymentid": {
-                "type": "string",
-                "index": "not_analyzed"
-              },
-              "snanny-ancestor-name": {
-                "type": "string"
-              },
-              "snanny-ancestor-uuid": {
-                "type": "string",
-                "index": "not_analyzed" 
-              },
-              "snanny-ancestor-description": {
-                "type": "string"
-              },
-              "snanny-ancestor-terms":{
-              	"type": "string"
-              }
-            }
-          },
-          "snanny-access": {
-            "properties": {
-              "snanny-access-type": {
-                "type": "string",
-                "index": "not_analyzed" 
-              },
-              "snanny-access-auth": {
-                "type": "string",
-                "index": "not_analyzed" 
-              }
-            }
-          },
-          
-          "snanny-author": {
-            "type": "string",
-            "index": "not_analyzed"
-          },
-          "snanny-depth": {
-            "type": "double"
-          },
-          "snanny-id": {
-            "type": "string",
-            "index": "not_analyzed" 
-          },
-          "snanny-uuid": {
-            "type": "string",
-            "index": "not_analyzed" 
-          },
-          "snanny-name": {
-            "type": "string"
-          },
-          "snanny-coordinates": {
-             "type":"geo_point",
-             "doc_values": true,
-	          "store": true, 
-	          "fielddata": {
-	            "format": "compressed",
-	            "precision": "1km"
-	          }    
-          },
-          "snanny-description": {
-            "type": "string"
-          }
+    "snanny-resulttimestamp": {
+      "type": "date",
+      "ignore_malformed" : true
+    },
+    "snanny-resultfile": {
+      "type": "string"
+    },
+    "snanny-updatetimestamp": {
+      "type": "date",
+      "ignore_malformed" : true
+    },
+    "snanny-ancestors": {
+      "type": "nested",
+      "properties": {
+        "snanny-ancestor-deploymentid": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "snanny-ancestor-name": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "snanny-ancestor-uuid": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "snanny-ancestor-description": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "snanny-ancestor-terms": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "snanny-ancestor-childs": {
+          "type": "string",
+          "index": "not_analyzed"
         }
       }
+    },
+    "snanny-access": {
+      "properties": {
+        "snanny-access-type": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "snanny-access-auth": {
+          "type": "string",
+          "index": "not_analyzed"
+        }
+      }
+    },
+    "snanny-author": {
+      "type": "string",
+      "index": "not_analyzed"
+    },
+    "snanny-depth": {
+      "type": "double"
+    },
+    "snanny-uuid": {
+      "type": "string",
+      "index": "not_analyzed"
+    },
+    "snanny-name": {
+      "type": "string"
+    },
+    "snanny-coordinates": {
+      "type":"geo_point",
+      "doc_values": true,
+      "store": true,
+      "fielddata": {
+        "format": "compressed",
+        "precision": "1km"
+      }
+    },
+    "snanny-description": {
+      "type": "string"
     }
   }
 }

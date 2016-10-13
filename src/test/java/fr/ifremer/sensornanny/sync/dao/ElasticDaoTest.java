@@ -4,12 +4,12 @@ import fr.ifremer.sensornanny.sync.base.IntegrationTest;
 import fr.ifremer.sensornanny.sync.config.Config;
 import fr.ifremer.sensornanny.sync.dao.impl.ElasticDaoImpl;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.Ancestor;
-import fr.ifremer.sensornanny.sync.dto.elasticsearch.Coordinates;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.ObservationJson;
 import fr.ifremer.sensornanny.sync.manager.NodeManager;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
+import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.geogrid.GeoHashGridBuilder;
@@ -46,15 +46,15 @@ public class ElasticDaoTest extends IntegrationTest {
 
             observation.setDeploymentId(String.valueOf(Objects.hash(observation.getUuid())));
 
-            Coordinates coordinates = new Coordinates();
+            GeoPoint coordinatesGeoPoint = new GeoPoint();
             double caze = Math.random();
             boolean less = caze > 0.5;
             double lat = caze * 90;
-            coordinates.setLat(less ? -lat : lat);
+            coordinatesGeoPoint.resetLat(less ? -lat : lat);
             double lon = caze * 180;
-            coordinates.setLon(less ? -lon : lon);
+            coordinatesGeoPoint.resetLon(less ? -lon : lon);
             observation.setDepth(-(caze * 1800));
-            observation.setCoordinates(coordinates);
+            observation.setCoordinates(coordinatesGeoPoint.toString());
 
             boolean newRand = Math.random() > 0.5;
             observation.setAncestors(Arrays.asList((newRand ? createAncestor : createAncestor2)));

@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.google.gson.annotations.SerializedName;
-
 /**
  * Representation of an observation
  * 
@@ -15,43 +13,41 @@ import com.google.gson.annotations.SerializedName;
 public class ObservationJson {
 
     /** Unique identifier of the ancestor observations */
-    @SerializedName("snanny-deploymentid")
     private String deploymentId;
+
     /** System uuid **/
-    @SerializedName("snanny-uuid")
     private String uuid;
+
     /** Coordinates of the observation */
-    @SerializedName("snanny-coordinates")
-    private Coordinates coordinates;
+    private String coordinates;
+
     /** Name of the observation */
-    @SerializedName("snanny-name")
     private String name;
+
     /** author name of the observation file */
-    @SerializedName("snanny-author")
     private String author;
+
     /** Description of the observation */
-    @SerializedName("snanny-description")
     private String description;
+
     /** Family */
-    @SerializedName("snanny-family")
     private String family;
+
     /** List of ancestors (systems which allow this observation) */
-    @SerializedName("snanny-ancestors")
     private List<Ancestor> ancestors = new ArrayList<>();
+
     /** Time of the observations */
-    @SerializedName("snanny-resulttimestamp")
     private Date resultTimestamp;
+
     /** Time of the uploaded document */
-    @SerializedName("snanny-updatetimestamp")
     private Date updateTimestamp;
+
     /** Result name of the observation allow-accessing the file */
-    @SerializedName("snanny-resultfile")
     private String result;
+
     /** Depth of the observation */
-    @SerializedName("snanny-depth")
     private Number depth;
 
-    @SerializedName("snanny-access")
     private Permission permission;
 
     public String getDeploymentId() {
@@ -70,7 +66,7 @@ public class ObservationJson {
         this.uuid = uuid;
     }
 
-    public void setCoordinates(Coordinates coordinates) {
+    public void setCoordinates(String coordinates) {
         this.coordinates = coordinates;
     }
 
@@ -106,7 +102,7 @@ public class ObservationJson {
         this.result = result;
     }
 
-    public Coordinates getCoordinates() {
+    public String getCoordinates() {
         return coordinates;
     }
 

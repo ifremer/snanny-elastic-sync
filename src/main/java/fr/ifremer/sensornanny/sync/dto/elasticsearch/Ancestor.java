@@ -2,8 +2,6 @@ package fr.ifremer.sensornanny.sync.dto.elasticsearch;
 
 import java.util.List;
 
-import com.google.gson.annotations.SerializedName;
-
 /**
  * System representation
  * 
@@ -13,22 +11,21 @@ import com.google.gson.annotations.SerializedName;
 public class Ancestor {
 
     /** Unique identifier of the system observations */
-    @SerializedName("snanny-ancestor-deploymentid")
     private String deploymentId;
+
     /** Unique identifier of the system */
-    @SerializedName("snanny-ancestor-uuid")
     private String uuid;
+
     /** Name of the system */
-    @SerializedName("snanny-ancestor-name")
     private String name;
+
     /** Description of the system */
-    @SerializedName("snanny-ancestor-description")
     private String description;
+
     /** Terms */
-    @SerializedName("snanny-ancestor-terms")
     private List<String> terms;
+
     /** Keywords */
-    @SerializedName("snanny-ancestor-keywords")
     private List<String> keywords;
 
     public String getDeploymentId() {

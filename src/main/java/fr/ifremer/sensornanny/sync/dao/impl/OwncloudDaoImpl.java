@@ -198,12 +198,13 @@ public class OwncloudDaoImpl implements IOwncloudDao {
 
     @Override
     public List<String> getAncestors(String uuid, Date beginPosition, Date endPosition) {
-        Long beginTime = beginPosition != null ? beginPosition.getTime() : null;
-        Long endTime = endPosition != null ? endPosition.getTime() : null;
+        Long beginTime = beginPosition != null ? beginPosition.getTime() / 1000 : null;
+        Long endTime = endPosition != null ? endPosition.getTime() / 1000 : null;
+
         URI uri = UriComponentsBuilder.fromHttpUrl(Config.smlEndpoint() + uuid + ANCESTORS)
                 // beginTime
                 .queryParam(BEGINTIME_PARAMETER, beginTime)
-                        // endTimeTime
+                // endTimeTime
                 .queryParam(ENDTIME_PARAMETER, endTime)
                 .build().encode().toUri();
         SensorMLAncestors result = get(uri, SensorMLAncestors.class, new GsonHttpMessageConverter(), "SML " + uri

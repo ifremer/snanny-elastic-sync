@@ -1,10 +1,12 @@
 package fr.ifremer.sensornanny.sync;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -80,22 +82,31 @@ public class Main {
             if (resultOptions.length != 1) {
                 showHelp(options);
             } else {
-                injector = Guice.createInjector(new ElasticSyncModule());
-                Option option = resultOptions[0];
-                switch (option.getOpt()) {
 
-                    case SINCE_OPTION:
-                        executeWithOptionSince(option);
-                        break;
-                    case RANGE_OPTION:
-                        executeWithOptionRange(option);
-                        break;
-                    case RELAUNCH_FAILURES:
-                        executeWithOptionFailure();
-                        break;
-                    default:
-                        showHelp(options);
-                        break;
+                injector = Guice.createInjector(new ElasticSyncModule());
+
+                ElasticMapping mapping = injector.getInstance(ElasticMapping.class);
+                try {
+                    mapping.createMapping();
+
+                    Option option = resultOptions[0];
+                    switch (option.getOpt()) {
+
+                        case SINCE_OPTION:
+                            executeWithOptionSince(option);
+                            break;
+                        case RANGE_OPTION:
+                            executeWithOptionRange(option);
+                            break;
+                        case RELAUNCH_FAILURES:
+                            executeWithOptionFailure();
+                            break;
+                        default:
+                            showHelp(options);
+                            break;
+                    }
+                } catch (IOException | ExecutionException | InterruptedException e) {
+                    LOGGER.warning("Cannot create mapping : " + e.getMessage());
                 }
             }
 

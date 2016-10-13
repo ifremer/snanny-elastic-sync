@@ -9,7 +9,6 @@ import fr.ifremer.sensornanny.sync.converter.XmlOMDtoConverter;
 import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
 import fr.ifremer.sensornanny.sync.dao.rest.SensorNotFoundException;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.Ancestor;
-import fr.ifremer.sensornanny.sync.dto.elasticsearch.Coordinates;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.ObservationJson;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.Permission;
 import fr.ifremer.sensornanny.sync.dto.model.*;
@@ -24,6 +23,7 @@ import fr.ifremer.sensornanny.sync.util.UrlUtils;
 import fr.ifremer.sensornanny.sync.writer.IElasticWriter;
 import net.opengis.sos.v_2_0.InsertObservationType;
 import org.apache.commons.collections4.CollectionUtils;
+import org.elasticsearch.common.geo.GeoPoint;
 
 import javax.xml.bind.JAXBElement;
 import java.io.File;
@@ -148,7 +148,7 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
                         if (usedSensor == null) {
                             throw new SensorNotFoundException("Unable to find SML " + systemUuid);
                         }
-                        if (usedAxis == null) {
+                        if ((timePosition.getLatitude() == null || timePosition.getLongitude() == null) && usedAxis == null) {
                             usedAxis = getFirstValidAxisInSML(ancestors, timePosition.getDate(),
                                     timePosition.getDate());
                         }
@@ -170,17 +170,15 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
                         item.setDeploymentId(String.valueOf(Objects.hash(identifier, usedSensor.getUuid(),
                                 usedSensor.getStartTime(), usedSensor.getEndTime())));
 
-                        Coordinates coordinates = new Coordinates();
+                        GeoPoint coordinatesGeoPoint = new GeoPoint();
                         if (timePosition.getLatitude() != null && timePosition.getLongitude() != null) {
-                            coordinates.setLat(timePosition.getLatitude());
-                            coordinates.setLon(timePosition.getLongitude());
+                            coordinatesGeoPoint.reset(timePosition.getLatitude(), timePosition.getLongitude());
                             item.setDepth(timePosition.getDepth());
                         } else if (usedAxis != null) {
-                            coordinates.setLat(usedAxis.getLat().doubleValue());
-                            coordinates.setLon(usedAxis.getLon().doubleValue());
+                            coordinatesGeoPoint.reset(usedAxis.getLat().doubleValue(), usedAxis.getLon().doubleValue());
                             item.setDepth(usedAxis.getDep());
                         }
-                        item.setCoordinates(coordinates);
+                        item.setCoordinates(coordinatesGeoPoint.getLat() + "," + coordinatesGeoPoint.getLon());
 
                         // Set permissions
                         item.setPermission(permission);

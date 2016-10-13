@@ -47,6 +47,7 @@ public class ElasticSyncModule extends AbstractModule {
 
         // Reader/Writer
         bind(IOwncloudReader.class).to(OwncloudReaderImpl.class);
+        bind(ElasticMapping.class);
         bind(IElasticWriter.class).to(ElasticWriterImpl.class);
         bind(IElasticProcessor.class).to(ElasticProcessorImpl.class);
         bind(ObservationDelegateProcessorImpl.class);
