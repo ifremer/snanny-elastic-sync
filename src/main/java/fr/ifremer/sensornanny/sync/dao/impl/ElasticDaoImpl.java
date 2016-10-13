@@ -99,16 +99,6 @@ public class ElasticDaoImpl implements IElasticDao {
 
     @Override
     public boolean write(String uuid, ObservationJson observation) {
-        Gson gson = new GsonBuilder().registerTypeAdapter(Date.class, new JsonSerializer<Date>() {
-
-            @Override
-            public JsonElement serialize(Date src, Type typeOfSrc, JsonSerializationContext context) {
-                if (src != null) {
-                    return new JsonPrimitive(src.getTime());
-                }
-                return null;
-            }
-        }).create();
 
         try {
             JsonObject item = new JsonObject();
