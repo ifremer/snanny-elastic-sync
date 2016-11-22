@@ -64,6 +64,10 @@ public final class Config {
         return get("es.index.observations");
     }
 
+    public static String systemsIndex() {
+        return get("es.index.systems");
+    }
+
     /**
      * @return owncloud service endpoint url
      */

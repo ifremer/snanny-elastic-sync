@@ -1,7 +1,5 @@
 package fr.ifremer.sensornanny.sync.dao.impl;
 
-import java.lang.reflect.Type;
-import java.util.Date;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,7 +22,7 @@ import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.SearchHit;
 
 import fr.ifremer.sensornanny.sync.config.Config;
-import fr.ifremer.sensornanny.sync.dao.IElasticDao;
+import fr.ifremer.sensornanny.sync.dao.IObservationDao;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.ObservationJson;
 import fr.ifremer.sensornanny.sync.manager.NodeManager;
 
@@ -36,9 +34,9 @@ import static fr.ifremer.sensornanny.sync.constant.ObservationsFields.*;
  * @author athorel
  *
  */
-public class ElasticDaoImpl implements IElasticDao {
+public class ObservationDaoImpl implements IObservationDao {
 
-    private static final Logger LOGGER = Logger.getLogger(ElasticDaoImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ObservationDaoImpl.class.getName());
     private static final int NUMBER_OF_ITEMS_PER_DELETION = 10000;
     private static final String WILDCARDS = "*";
 
@@ -86,13 +84,14 @@ public class ElasticDaoImpl implements IElasticDao {
             search.getHits().forEach(new Consumer<SearchHit>() {
                 @Override
                 public void accept(SearchHit t) {
-                    bulk.add(getClient().prepareDelete(Config.observationsIndex(), SNANNY_OBSERVATIONS, t.getId()).request());
+                    bulk.add(client.prepareDelete(Config.observationsIndex(), SNANNY_OBSERVATIONS, t.getId()).request());
                 }
             });
             // Execute the bulk
             bulk.execute();
             // Get the next page
-            search = client.prepareSearchScroll(search.getScrollId()).setScroll(scroll).get();
+            search = client.prepareSearch(Config.observationsIndex()).setQuery(QueryBuilders.wildcardQuery(
+                    SNANNY_UUID, uuid + WILDCARDS)).setScroll(scroll).setSize(NUMBER_OF_ITEMS_PER_DELETION).get();
             items = search.getHits().hits().length;
         }
     }

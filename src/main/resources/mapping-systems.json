@@ -1,0 +1,25 @@
+{
+  "properties": {
+    "snanny-uuid": {
+      "type": "string"
+    },
+    "snanny-systems-name": {
+      "type": "string"
+    },
+    "snanny-systems-description": {
+      "type": "string"
+    },
+    "snanny-systems-uuid": {
+      "type": "string"
+    },
+    "snanny-systems-fileid": {
+      "type": "long"
+    },
+    "snanny-systems-resultfile": {
+      "type": "string"
+    },
+    "snanny-systems-hasdata": {
+      "type": "boolean"
+    }
+  }
+}

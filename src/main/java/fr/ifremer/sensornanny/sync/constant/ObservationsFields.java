@@ -11,10 +11,12 @@ public class ObservationsFields {
     private static final String UUID = "uuid";
     private static final String DESCRIPTION = "description";
     private static final String TERMS = "terms";
+    private static final String RESULTFILE = "resultfile";
 
     public static final String SNANNY = "snanny";
 
     public static final String SNANNY_OBSERVATIONS = "snanny-observations";
+    public static final String SNANNY_SYSTEMS = "snanny-systems";
 
     public static final String SNANNY_NAME = SNANNY + "-" + NAME;
 
@@ -24,7 +26,7 @@ public class ObservationsFields {
 
     public static final String SNANNY_RESULTTIMESTAMP = SNANNY + "-resulttimestamp";
 
-    public static final String SNANNY_RESULTFILE = SNANNY + "-resultfile";
+    public static final String SNANNY_RESULTFILE = SNANNY + "-" + RESULTFILE;
 
     public static final String SNANNY_UPDATETIMESTAMP = SNANNY + "-updatetimestamp";
 
@@ -53,5 +55,12 @@ public class ObservationsFields {
     public static final String SNANNY_DEPTH = SNANNY + "-depth";
 
     public static final String SNANNY_COORDINATES = SNANNY + "-coordinates";
+
+    public static final String SNANNY_SYSTEM_UUID = SNANNY_SYSTEMS + "-" + UUID;
+    public static final String SNANNY_SYSTEM_NAME = SNANNY_SYSTEMS + "-" + NAME;
+    public static final String SNANNY_SYSTEM_DESCRIPTION = SNANNY_SYSTEMS + "-" + DESCRIPTION;
+    public static final String SNANNY_SYSTEM_FILEID = SNANNY_SYSTEMS + "-fileid";
+    public static final String SNANNY_SYSTEM_RESULTFILE = SNANNY_SYSTEMS + "-" + RESULTFILE;
+    public static final String SNANNY_SYSTEM_HASDATA = SNANNY_SYSTEMS + "-hasdata";
 
 }

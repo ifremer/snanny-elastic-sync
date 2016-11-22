@@ -85,6 +85,7 @@ public class XmlSensorMLDtoConverter extends AbstractXMLConverter {
 				String value = coordinates.getValue();
 				if (StringUtils.isNotBlank(value)) {
 					Axis axis = new Axis();
+					value = value.replaceAll("  ", " ");
 					String[] split = value.split(" ");
 					switch (split.length) {
 					case 3:

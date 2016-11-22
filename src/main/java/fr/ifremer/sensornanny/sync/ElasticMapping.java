@@ -13,31 +13,43 @@ import org.elasticsearch.common.collect.ImmutableOpenMap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Logger;
+
+import static fr.ifremer.sensornanny.sync.constant.ObservationsFields.SNANNY_OBSERVATIONS;
+import static fr.ifremer.sensornanny.sync.constant.ObservationsFields.SNANNY_SYSTEMS;
 
 /**
  * Created by asi on 29/09/16.
  */
 public class ElasticMapping {
 
-    private static final String SNANNY_OBSERVATIONS = "snanny-observations";
+    private static final Logger LOGGER = Logger.getLogger(ElasticMapping.class.getName());
 
     protected void createMapping() throws IOException, ExecutionException, InterruptedException {
+        create("mapping-observations.json", Config.observationsIndex(), SNANNY_OBSERVATIONS);
+        create("mapping-systems.json", Config.systemsIndex(), SNANNY_SYSTEMS);
+    }
 
-        InputStream stream = getClass().getClassLoader().getResourceAsStream("mapping.json");
-        String index = Config.observationsIndex();
+    private void create(String fileName, String indexName, String typeName) throws IOException, ExecutionException, InterruptedException {
+        InputStream stream = getClass().getClassLoader().getResourceAsStream(fileName);
 
         String source = IOUtils.toString(stream);
-        IndicesAdminClient indices = NodeManager.getInstance().getClient().admin().indices();
-        IndicesExistsResponse timelineIndiceExist = indices.exists(new IndicesExistsRequest().indices(new String[]{index})).get();
+
+        IndicesExistsResponse timelineIndiceExist = getIndicesAdminClient().exists(new IndicesExistsRequest().indices(new String[]{indexName})).get();
 
         if (!timelineIndiceExist.isExists()) {
-            indices.prepareCreate(index).execute().actionGet();
+            getIndicesAdminClient().prepareCreate(indexName).execute().actionGet();
         }
 
-        GetMappingsResponse reponse = indices.prepareGetMappings(index).setTypes(SNANNY_OBSERVATIONS).get();
-        ImmutableOpenMap<String, MappingMetaData> mapIndex = reponse.getMappings().get(index);
-        if (mapIndex == null || mapIndex.get(SNANNY_OBSERVATIONS) == null) {
-            indices.preparePutMapping(index).setType(SNANNY_OBSERVATIONS).setSource(source).get();
+        GetMappingsResponse reponse = getIndicesAdminClient().prepareGetMappings(indexName).setTypes(typeName).get();
+        ImmutableOpenMap<String, MappingMetaData> mapIndex = reponse.getMappings().get(indexName);
+        if (mapIndex == null || mapIndex.get(typeName) == null) {
+            getIndicesAdminClient().preparePutMapping(indexName).setType(typeName).setSource(source).get();
         }
     }
+
+    private IndicesAdminClient getIndicesAdminClient() {
+        return NodeManager.getInstance().getClient().admin().indices();
+    }
+
 }

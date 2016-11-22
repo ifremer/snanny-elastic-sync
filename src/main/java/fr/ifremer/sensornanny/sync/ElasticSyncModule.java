@@ -12,11 +12,13 @@ import fr.ifremer.sensornanny.sync.converter.PermissionsConverter;
 import fr.ifremer.sensornanny.sync.converter.XmlOMDtoConverter;
 import fr.ifremer.sensornanny.sync.converter.XmlSensorMLDtoConverter;
 import fr.ifremer.sensornanny.sync.converter.XmlTimePeriodDateConverter;
-import fr.ifremer.sensornanny.sync.dao.IElasticDao;
+import fr.ifremer.sensornanny.sync.dao.IObservationDao;
 import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
+import fr.ifremer.sensornanny.sync.dao.ISystemDao;
 import fr.ifremer.sensornanny.sync.dao.ITermDao;
-import fr.ifremer.sensornanny.sync.dao.impl.ElasticDaoImpl;
+import fr.ifremer.sensornanny.sync.dao.impl.ObservationDaoImpl;
 import fr.ifremer.sensornanny.sync.dao.impl.OwncloudDaoImpl;
+import fr.ifremer.sensornanny.sync.dao.impl.SystemDaoImpl;
 import fr.ifremer.sensornanny.sync.dao.impl.TermDaoImpl;
 import fr.ifremer.sensornanny.sync.parse.ParserManager;
 import fr.ifremer.sensornanny.sync.parse.impl.OMParser;
@@ -41,7 +43,8 @@ public class ElasticSyncModule extends AbstractModule {
     @Override
     protected void configure() {
         // DAO
-        bind(IElasticDao.class).to(ElasticDaoImpl.class);
+        bind(IObservationDao.class).to(ObservationDaoImpl.class);
+        bind(ISystemDao.class).to(SystemDaoImpl.class);
         bind(IOwncloudDao.class).to(OwncloudDaoImpl.class);
         bind(ITermDao.class).to(TermDaoImpl.class);
 

@@ -113,7 +113,7 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
             // Suppression de l'index
             for (OM observation : observations) {
                 indexStatus.setUuid(observation.getIdentifier());
-                // First delete observations
+                // First delete observations and systems
                 elasticWriter.delete(observation.getIdentifier());
                 // Get the procedure
                 String procedure = observation.getProcedure();
@@ -138,56 +138,66 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
                     @Override
                     public void accept(TimePosition timePosition) {
 
-                        // Si le system n'a pas été trouvé via les dates de
-                        // l'observation, on essaye de le
-                        // trouver via la date de la première position
-                        if (usedSensor == null) {
-                            usedSensor = cacheSystem.getData(systemUuid, timePosition.getDate(),
-                                    timePosition.getDate());
-                        }
-                        if (usedSensor == null) {
-                            throw new SensorNotFoundException("Unable to find SML " + systemUuid);
-                        }
-                        if ((timePosition.getLatitude() == null || timePosition.getLongitude() == null) && usedAxis == null) {
-                            usedAxis = getFirstValidAxisInSML(ancestors, timePosition.getDate(),
-                                    timePosition.getDate());
-                        }
-
-                        ObservationJson item = new ObservationJson();
                         String identifier = observation.getIdentifier();
-                        item.setUuid(identifier);
-                        item.setAncestors(ancestors);
-                        item.setName(observation.getName());
-                        item.setResult(observationResult.getUrl());
-                        item.setAuthor(content.getUser());
 
-                        item.setDescription(observation.getDescription());
-                        item.setUpdateTimestamp(observation.getUpdateDate());
+                        boolean hasData = false;
 
-                        // Get the timestamp
-                        item.setResultTimestamp(timePosition.getDate());
+                        if(timePosition != null) {
 
-                        item.setDeploymentId(String.valueOf(Objects.hash(identifier, usedSensor.getUuid(),
-                                usedSensor.getStartTime(), usedSensor.getEndTime())));
+                            hasData = true;
+                            // Si le system n'a pas été trouvé via les dates de
+                            // l'observation, on essaye de le
+                            // trouver via la date de la première position
+                            if (usedSensor == null) {
+                                usedSensor = cacheSystem.getData(systemUuid, timePosition.getDate(),
+                                        timePosition.getDate());
+                            }
+                            if (usedSensor == null) {
+                                System.out.println("Unable to find SML " + systemUuid);
+                                throw new SensorNotFoundException("Unable to find SML " + systemUuid);
+                            }
+                            if ((timePosition.getLatitude() == null || timePosition.getLongitude() == null) && usedAxis == null) {
+                                usedAxis = getFirstValidAxisInSML(ancestors, timePosition.getDate(),
+                                        timePosition.getDate());
+                            }
 
-                        GeoPoint coordinatesGeoPoint = new GeoPoint();
-                        if (timePosition.getLatitude() != null && timePosition.getLongitude() != null) {
-                            coordinatesGeoPoint.reset(timePosition.getLatitude(), timePosition.getLongitude());
-                            item.setDepth(timePosition.getDepth());
-                        } else if (usedAxis != null) {
-                            coordinatesGeoPoint.reset(usedAxis.getLat().doubleValue(), usedAxis.getLon().doubleValue());
-                            item.setDepth(usedAxis.getDep());
+                            ObservationJson item = new ObservationJson();
+                            item.setUuid(identifier);
+                            item.setAncestors(ancestors);
+                            item.setName(observation.getName());
+                            item.setResult(observationResult.getUrl());
+                            item.setAuthor(content.getUser());
+
+                            item.setDescription(observation.getDescription());
+                            item.setUpdateTimestamp(observation.getUpdateDate());
+
+                            // Get the timestamp
+                            item.setResultTimestamp(timePosition.getDate());
+
+                            item.setDeploymentId(String.valueOf(Objects.hash(identifier, usedSensor.getUuid(),
+                                    usedSensor.getStartTime(), usedSensor.getEndTime())));
+
+                            if (timePosition.getLatitude() != null && timePosition.getLongitude() != null) {
+                                item.setDepth(timePosition.getDepth());
+                                item.setCoordinates(timePosition.getLatitude() + "," + timePosition.getLongitude());
+                            } else if (usedAxis != null) {
+                                item.setDepth(usedAxis.getDep());
+                                item.setCoordinates(usedAxis.getLat().doubleValue() + "," + usedAxis.getLon().doubleValue());
+                            }
+
+                            // Set permissions
+                            item.setPermission(permission);
+
+                            String uuid = new StringBuilder(identifier).append(ID_SEPARATOR)
+                                    .append(String.format(FORMAT_ZERO_PAD, timePosition.getRecordNumber())).toString();
+                            if (elasticWriter.write(uuid, item)) {
+                                indexStatus.increaseIndexed();
+                            }
                         }
-                        item.setCoordinates(coordinatesGeoPoint.getLat() + "," + coordinatesGeoPoint.getLon());
-
-                        // Set permissions
-                        item.setPermission(permission);
 
                         String uuid = new StringBuilder(identifier).append(ID_SEPARATOR)
-                                .append(String.format(FORMAT_ZERO_PAD, timePosition.getRecordNumber())).toString();
-                        if (elasticWriter.write(uuid, item)) {
-                            indexStatus.increaseIndexed();
-                        }
+                                .append(String.format(FORMAT_ZERO_PAD, fileInfo.getFileId())).toString();
+                        elasticWriter.write(uuid, hasData, fileInfo);
                     }
                 });
 

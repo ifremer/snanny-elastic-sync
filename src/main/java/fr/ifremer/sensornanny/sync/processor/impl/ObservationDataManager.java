@@ -33,41 +33,47 @@ public class ObservationDataManager {
 
     public void readData(String uuid, OMResult observationResult, Consumer<TimePosition> consumer)
             throws DataNotFoundException {
-        String fileName = new File(observationResult.getUrl()).getName();
-        ObservationData data = ObservationData.of(fileName, observationResult.getRole());
-        IObservationParser parser = parserManager.getParser(data);
-        if (parser == null) {
-            return;
-        }
-
-        Integer moduloForParser = Config.moduloForParser(parser.getClass());
-        FileSizeInfo fileSize = getFileSize(uuid, observationResult.getUrl());
-        if (fileSize != null && fileSize.getFileSize() != null) {
-            Long fileInMo = fileSize.getFileSize() / ONE_MEGA_OCTECT_IN_OCTET;
-            int permits = fileInMo.intValue();
-            try {
-                // Acquire size elements
-                acquire(permits);
-                InputStream stream = owncloudDao.getResultData(uuid);
-                if (stream != null) {
-                    parser.read(data, stream, new Consumer<TimePosition>() {
-
-                        @Override
-                        public void accept(TimePosition result) {
-                            // Filter using modulo on the data manager
-                            if (result.getRecordNumber() % moduloForParser == 0) {
-                                consumer.accept(result);
-                            }
-                        }
-                    });
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (DataNotFoundException e) {
-                throw e;
-            } finally {
-                release(permits);
+        if(observationResult.getUrl() != null) {
+            String fileName = new File(observationResult.getUrl()).getName();
+            ObservationData data = ObservationData.of(fileName, observationResult.getRole());
+            IObservationParser parser = parserManager.getParser(data);
+            if (parser == null) {
+                return;
             }
+
+            Integer moduloForParser = Config.moduloForParser(parser.getClass());
+            FileSizeInfo fileSize = getFileSize(uuid, observationResult.getUrl());
+            if (fileSize != null && fileSize.getFileSize() != null) {
+                Long fileInMo = fileSize.getFileSize() / ONE_MEGA_OCTECT_IN_OCTET;
+                int permits = fileInMo.intValue();
+                try {
+                    // Acquire size elements
+                    acquire(permits);
+                    InputStream stream = owncloudDao.getResultData(uuid);
+                    if (stream != null) {
+                        parser.read(data, stream, new Consumer<TimePosition>() {
+
+                            @Override
+                            public void accept(TimePosition result) {
+                                // Filter using modulo on the data manager
+                                if (result.getRecordNumber() % moduloForParser == 0) {
+                                    consumer.accept(result);
+                                }
+                            }
+                        });
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (DataNotFoundException e) {
+                    throw e;
+                } finally {
+                    release(permits);
+                }
+            } else {
+                consumer.accept(null);
+            }
+        } else {
+            consumer.accept(null);
         }
     }
 
@@ -75,7 +81,8 @@ public class ObservationDataManager {
         try {
             return owncloudDao.getResultFileSize(uuid);
         } catch (HttpClientErrorException e) {
-            throw new DataNotFoundException("Unable to find result file " + filePath + " for uuid " + uuid);
+            return null;
+            //throw new DataNotFoundException("Unable to find result file " + filePath + " for uuid " + uuid);
         }
     }
 

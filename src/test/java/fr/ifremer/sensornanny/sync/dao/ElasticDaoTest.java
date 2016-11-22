@@ -2,7 +2,7 @@ package fr.ifremer.sensornanny.sync.dao;
 
 import fr.ifremer.sensornanny.sync.base.IntegrationTest;
 import fr.ifremer.sensornanny.sync.config.Config;
-import fr.ifremer.sensornanny.sync.dao.impl.ElasticDaoImpl;
+import fr.ifremer.sensornanny.sync.dao.impl.ObservationDaoImpl;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.Ancestor;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.ObservationJson;
 import fr.ifremer.sensornanny.sync.manager.NodeManager;
@@ -24,7 +24,7 @@ import java.util.Objects;
 @Category(IntegrationTest.class)
 public class ElasticDaoTest extends IntegrationTest {
 
-    public IElasticDao dao = new ElasticDaoImpl();
+    public IObservationDao dao = new ObservationDaoImpl();
 
     @Test
     public void testGetFiles() {
