@@ -88,8 +88,7 @@ public class SystemDaoImpl implements ISystemDao {
             // Execute the bulk
             bulk.execute();
             // Get the next page
-            search = client.prepareSearch(Config.systemsIndex()).setQuery(QueryBuilders.wildcardQuery(
-                    SNANNY_UUID, uuid + WILDCARDS)).setScroll(scroll).setSize(NUMBER_OF_ITEMS_PER_DELETION).get();
+            search = client.prepareSearchScroll(search.getScrollId()).setScroll(scroll).execute().actionGet();
             items = search.getHits().hits().length;
         }
     }
