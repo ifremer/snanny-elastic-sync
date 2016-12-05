@@ -43,6 +43,8 @@ public class XmlSensorMLDtoConverter extends AbstractXMLConverter {
 	private static final ZoneId DEFAULT_ZONE = ZoneId.of("UTC");
 	private static final String DEFAULT_TIME = "3000-12-31T00:00:00";
 	public static final String YYYY_MM_DD_THH_MM_SS_Z = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+	private static final String DOUBLE_SPACE = "  ";
+	private static final String SPACE = " ";
 	private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(YYYY_MM_DD_THH_MM_SS_Z);
 
 	public SensorML fromXML(JAXBElement<PhysicalSystemType> xml) {
@@ -85,8 +87,9 @@ public class XmlSensorMLDtoConverter extends AbstractXMLConverter {
 				String value = coordinates.getValue();
 				if (StringUtils.isNotBlank(value)) {
 					Axis axis = new Axis();
-					value = value.replaceAll("  ", " ");
-					String[] split = value.split(" ");
+					// TODO Constant
+					value = value.replaceAll(DOUBLE_SPACE, SPACE);
+					String[] split = value.split(SPACE);
 					switch (split.length) {
 					case 3:
 						axis.setDep(Double.valueOf(split[2]));

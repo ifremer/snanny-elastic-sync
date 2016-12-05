@@ -60,7 +60,6 @@ public class ObservationsFields {
     public static final String SNANNY_SYSTEM_NAME = SNANNY_SYSTEMS + "-" + NAME;
     public static final String SNANNY_SYSTEM_DESCRIPTION = SNANNY_SYSTEMS + "-" + DESCRIPTION;
     public static final String SNANNY_SYSTEM_FILEID = SNANNY_SYSTEMS + "-fileid";
-    public static final String SNANNY_SYSTEM_RESULTFILE = SNANNY_SYSTEMS + "-" + RESULTFILE;
     public static final String SNANNY_SYSTEM_HASDATA = SNANNY_SYSTEMS + "-hasdata";
 
 }

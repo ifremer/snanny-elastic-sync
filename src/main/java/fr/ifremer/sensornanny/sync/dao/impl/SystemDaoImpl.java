@@ -58,7 +58,7 @@ public class SystemDaoImpl implements ISystemDao {
                 }
 
             })
-            .setBulkActions(1000)
+            .setBulkActions(100)
             .setBulkSize(new ByteSizeValue(1, ByteSizeUnit.GB))
             .setFlushInterval(TimeValue.timeValueSeconds(5))
             .setConcurrentRequests(1)
@@ -95,16 +95,14 @@ public class SystemDaoImpl implements ISystemDao {
 
 
     @Override
-    public boolean write(String uuid, boolean hasData, OwncloudSyncModel om) {
+    public boolean write(String uuid, boolean hasData, OwncloudSyncModel system) {
         try {
             JsonObject item = new JsonObject();
             item.addProperty(SNANNY_UUID, uuid);
-            item.addProperty(SNANNY_SYSTEM_NAME, om.getName());
-            item.addProperty(SNANNY_SYSTEM_DESCRIPTION, om.getDescription());
-            item.addProperty(SNANNY_SYSTEM_UUID, om.getSystemUuid());
-
-            item.addProperty(SNANNY_SYSTEM_FILEID, om.getFileId());
-            item.addProperty(SNANNY_SYSTEM_RESULTFILE, om.getResultFile());
+            item.addProperty(SNANNY_SYSTEM_NAME, system.getName());
+            item.addProperty(SNANNY_SYSTEM_DESCRIPTION, system.getDescription());
+            item.addProperty(SNANNY_SYSTEM_UUID, system.getSystemUuid());
+            item.addProperty(SNANNY_SYSTEM_FILEID, system.getFileId());
             item.addProperty(SNANNY_SYSTEM_HASDATA, hasData);
 
             UpdateRequest updateRequest = new UpdateRequest(Config.systemsIndex(), SNANNY_SYSTEMS, uuid);
