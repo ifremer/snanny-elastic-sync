@@ -1,13 +1,12 @@
 package fr.ifremer.sensornanny.sync.dao.impl;
 
-import java.lang.reflect.Type;
-import java.util.Date;
+
+import static fr.ifremer.sensornanny.sync.constant.ObservationsFields.*;
+
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.google.gson.*;
-import fr.ifremer.sensornanny.sync.dto.elasticsearch.Ancestor;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
@@ -19,16 +18,19 @@ import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.SearchHit;
 
+import com.google.gson.*;
+
 import fr.ifremer.sensornanny.sync.config.Config;
 import fr.ifremer.sensornanny.sync.dao.IElasticDao;
+import fr.ifremer.sensornanny.sync.dto.elasticsearch.Ancestor;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.ObservationJson;
 import fr.ifremer.sensornanny.sync.manager.NodeManager;
 
-import static fr.ifremer.sensornanny.sync.constant.ObservationsFields.*;
 
 /**
  * Implementation of elastic Dao
@@ -79,7 +81,7 @@ public class ElasticDaoImpl implements IElasticDao {
                 SNANNY_UUID, uuid + WILDCARDS)).setScroll(scroll).setSize(NUMBER_OF_ITEMS_PER_DELETION).get();
 
         // While there are items to delete
-        int items = search.getHits().hits().length;
+        int items = search.getHits().getHits().length;
         while (items > 0) {
             // Create a bulk item of deletion
             BulkRequestBuilder bulk = getClient().prepareBulk();
@@ -93,7 +95,7 @@ public class ElasticDaoImpl implements IElasticDao {
             bulk.execute();
             // Get the next page
             search = client.prepareSearchScroll(search.getScrollId()).setScroll(scroll).get();
-            items = search.getHits().hits().length;
+            items = search.getHits().getHits().length;
         }
     }
 
@@ -124,7 +126,7 @@ public class ElasticDaoImpl implements IElasticDao {
             item.addProperty(SNANNY_COORDINATES, observation.getCoordinates());
 
             UpdateRequest updateRequest = new UpdateRequest(Config.observationsIndex(), SNANNY_OBSERVATIONS, uuid);
-            updateRequest.doc(item.toString()).upsert(item.toString());
+            updateRequest.doc(item.toString(), XContentType.JSON).upsert(item.toString(), XContentType.JSON);
 
             bulkProcessor.add(updateRequest);
             return true;

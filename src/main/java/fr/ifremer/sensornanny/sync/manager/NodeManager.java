@@ -9,6 +9,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
 import fr.ifremer.sensornanny.sync.config.Config;
 
@@ -52,19 +53,20 @@ public final class NodeManager {
     }
 
     public static void extractClientSettings() throws UnknownHostException {
-        Settings settings = Settings.settingsBuilder().put(CLUSTER_NAME, Config.clusterName()).put(
-                CLIENT_TRANSPORT_SNIFF, true).build();
-
-        client = new TransportClient.Builder().settings(settings).build();
+    	
+    	Settings settings = Settings.builder().put(CLUSTER_NAME, Config.clusterName())
+    			.put(CLIENT_TRANSPORT_SNIFF, true).build();    	
+    	
+    	client = new PreBuiltTransportClient(settings);
+    	
         String[] nodes = Config.clusterHosts();
         for (String host : nodes) {
-            client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), Config
-                    .clusterPort()));
+            client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), Config.clusterPort()));
         }
     }
 
     /**
-     * Get the transport client for searchs
+     * Get the transport client for searches
      * 
      * @return transport client configured with properties
      */
