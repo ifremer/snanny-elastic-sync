@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,6 +37,7 @@ import fr.ifremer.sensornanny.sync.reader.FifoReader;
 import fr.ifremer.sensornanny.sync.reader.IOwncloudReader;
 import fr.ifremer.sensornanny.sync.report.ReportManager;
 import fr.ifremer.sensornanny.sync.util.DateUtils;
+import fr.ifremer.sensornanny.sync.writer.IElasticWriter;
 
 /**
  * Main class for elasticsearch synchronisation
@@ -212,17 +214,19 @@ public class Main {
                 ExecutorService executors = Executors.newFixedThreadPool(Config.threadNumbers(), namedThreadFactory);
                 OwncloudSyncModel read;
                 IElasticProcessor processor = injector.getInstance(IElasticProcessor.class);
+
                 while ((read = fifoReader.read()) != null) {
                     executors.execute(processor.of(read));
                 }
                 executors.shutdown();
-                while (!executors.isTerminated()) {
-                    try {
-                        Thread.sleep(1000L);
-                    } catch (InterruptedException e) {
-                        LOGGER.log(Level.WARNING, e.getMessage(), e);
-                    }
+                try {
+                    executors.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+                    //flush data when all threads finished their treatment
+                    injector.getInstance(IElasticWriter.class).flush();
+                } catch (InterruptedException e) {
+                    LOGGER.log(Level.WARNING, e.getMessage(), e);
                 }
+
             }
         } catch (Exception e) {
             ReportManager.err("ElasticSearch is not listening", e);

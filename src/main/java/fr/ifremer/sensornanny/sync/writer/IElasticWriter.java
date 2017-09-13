@@ -1,6 +1,7 @@
 package fr.ifremer.sensornanny.sync.writer;
 
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.ObservationJson;
+import fr.ifremer.sensornanny.sync.dto.model.SensorML;
 import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
 
 /**
@@ -29,5 +30,19 @@ public interface IElasticWriter {
      */
     boolean write(String uuid, ObservationJson observation);
 
-    boolean write(String uuid, boolean hasData, OwncloudSyncModel om);
+    /**
+     * Insert or update a system
+     *
+     * @param uuid unique identifier of a system
+     * @param hasData has the system linked data ?
+     * @param sml Representation object for a system
+     * @return <code>true</code> when the system have been correctly inserted or updated, otherwise
+     *         <code>false</code>
+     */
+    boolean write(String uuid, SensorML sml, boolean hasData);
+
+    /**
+     * Flush writers to ensure all data are written by the bulk processors
+     */
+    void flush();
 }

@@ -9,7 +9,7 @@ import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
  * @author athorel
  *
  */
-public interface IObservationDao {
+public interface IObservationDao extends ElasticSearchBulkProcessor {
 
     /**
      * Delete all the observations items represented by O&M uuid,

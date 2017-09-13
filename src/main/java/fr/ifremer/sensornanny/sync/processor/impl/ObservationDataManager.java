@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.concurrent.Semaphore;
 import java.util.function.Consumer;
-
 import org.springframework.web.client.HttpClientErrorException;
-
 import com.google.inject.Inject;
 
 import fr.ifremer.sensornanny.observation.parser.IObservationParser;
@@ -31,14 +29,24 @@ public class ObservationDataManager {
 
     private Semaphore semaphore = new Semaphore(Config.maxMemory());
 
-    public void readData(String uuid, OMResult observationResult, Consumer<TimePosition> consumer)
+    /**
+     *
+     * @param uuid
+     * @param observationResult
+     * @param consumer
+     * @return has data
+     * @throws DataNotFoundException
+     */
+    public boolean readData(String uuid, OMResult observationResult, Consumer<TimePosition> consumer)
             throws DataNotFoundException {
-        if(observationResult.getUrl() != null) {
+
+        boolean hasData = false;
+        if (observationResult.getUrl() != null) {
             String fileName = new File(observationResult.getUrl()).getName();
             ObservationData data = ObservationData.of(fileName, observationResult.getRole());
             IObservationParser parser = parserManager.getParser(data);
             if (parser == null) {
-                return;
+                return hasData;
             }
 
             Integer moduloForParser = Config.moduloForParser(parser.getClass());
@@ -51,16 +59,14 @@ public class ObservationDataManager {
                     acquire(permits);
                     InputStream stream = owncloudDao.getResultData(uuid);
                     if (stream != null) {
-                        parser.read(data, stream, new Consumer<TimePosition>() {
-
-                            @Override
-                            public void accept(TimePosition result) {
-                                // Filter using modulo on the data manager
-                                if (result.getRecordNumber() % moduloForParser == 0) {
-                                    consumer.accept(result);
+                        hasData = true;
+                        parser.read(data, stream,
+                                (TimePosition result) -> {
+                                    if (result.getRecordNumber() % moduloForParser == 0) {
+                                        consumer.accept(result);
+                                    }
                                 }
-                            }
-                        });
+                        );
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -75,6 +81,8 @@ public class ObservationDataManager {
         } else {
             consumer.accept(null);
         }
+
+        return hasData;
     }
 
     private FileSizeInfo getFileSize(String uuid, String filePath) throws DataNotFoundException {

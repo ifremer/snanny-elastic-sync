@@ -43,15 +43,15 @@ public class ElasticSyncModule extends AbstractModule {
     @Override
     protected void configure() {
         // DAO
-        bind(IObservationDao.class).to(ObservationDaoImpl.class);
-        bind(ISystemDao.class).to(SystemDaoImpl.class);
-        bind(IOwncloudDao.class).to(OwncloudDaoImpl.class);
+        bind(IObservationDao.class).to(ObservationDaoImpl.class).asEagerSingleton();
+        bind(ISystemDao.class).to(SystemDaoImpl.class).asEagerSingleton();
+        bind(IOwncloudDao.class).to(OwncloudDaoImpl.class).asEagerSingleton();
         bind(ITermDao.class).to(TermDaoImpl.class);
 
         // Reader/Writer
-        bind(IOwncloudReader.class).to(OwncloudReaderImpl.class);
+        bind(IOwncloudReader.class).to(OwncloudReaderImpl.class).asEagerSingleton();
         bind(ElasticMapping.class);
-        bind(IElasticWriter.class).to(ElasticWriterImpl.class);
+        bind(IElasticWriter.class).to(ElasticWriterImpl.class).asEagerSingleton();
         bind(IElasticProcessor.class).to(ElasticProcessorImpl.class);
         bind(ObservationDelegateProcessorImpl.class);
 

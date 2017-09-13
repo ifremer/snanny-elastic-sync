@@ -1,10 +1,13 @@
 package fr.ifremer.sensornanny.sync.dao.impl;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.gson.*;
+
+import fr.ifremer.sensornanny.sync.dao.ElasticSearchBulkProcessor;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.Ancestor;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -81,12 +84,9 @@ public class ObservationDaoImpl implements IObservationDao {
         while (items > 0) {
             // Create a bulk item of deletion
             BulkRequestBuilder bulk = getClient().prepareBulk();
-            search.getHits().forEach(new Consumer<SearchHit>() {
-                @Override
-                public void accept(SearchHit t) {
-                    bulk.add(client.prepareDelete(Config.observationsIndex(), SNANNY_OBSERVATIONS, t.getId()).request());
-                }
-            });
+            search.getHits().forEach((SearchHit t) ->
+                    bulk.add(client.prepareDelete(Config.observationsIndex(), SNANNY_OBSERVATIONS, t.getId()).request())
+            );
             // Execute the bulk
             bulk.execute();
             // Get the next page
@@ -132,6 +132,16 @@ public class ObservationDaoImpl implements IObservationDao {
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "entry " + uuid + " won't be write in elasticsearch", e);
             return false;
+        }
+    }
+
+    @Override
+    public void flush() {
+        try {
+            bulkProcessor.awaitClose(30, TimeUnit.SECONDS);
+            LOGGER.log(Level.INFO, "observation data flushed");
+        } catch(InterruptedException ie){
+            LOGGER.log(Level.SEVERE, "couldn't close observation dao properly",ie);
         }
     }
 

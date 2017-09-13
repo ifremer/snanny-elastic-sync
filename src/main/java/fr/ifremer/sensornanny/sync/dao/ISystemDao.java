@@ -1,5 +1,6 @@
 package fr.ifremer.sensornanny.sync.dao;
 
+import fr.ifremer.sensornanny.sync.dto.model.SensorML;
 import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
 
 /**
@@ -8,7 +9,7 @@ import fr.ifremer.sensornanny.sync.dto.owncloud.OwncloudSyncModel;
  * @author athorel
  *
  */
-public interface ISystemDao {
+public interface ISystemDao extends ElasticSearchBulkProcessor {
 
     /**
      * Delete all the system items represented by O&M uuid,
@@ -21,9 +22,9 @@ public interface ISystemDao {
     /**
      * Insert or update an observation
      * 
-     * @param om Representation object of an system
+     * @param sml Representation object of an system
      * @return <code>true</code> when the observations have been correctly inserted or updated, otherwise
      *         <code>false</code>
      */
-    boolean write(String uuid, boolean hasData, OwncloudSyncModel om);
+    boolean write(String uuid, SensorML sml, boolean hasData);
 }

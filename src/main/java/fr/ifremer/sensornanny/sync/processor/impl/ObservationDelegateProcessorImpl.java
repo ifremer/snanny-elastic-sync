@@ -23,7 +23,6 @@ import fr.ifremer.sensornanny.sync.util.UrlUtils;
 import fr.ifremer.sensornanny.sync.writer.IElasticWriter;
 import net.opengis.sos.v_2_0.InsertObservationType;
 import org.apache.commons.collections4.CollectionUtils;
-import org.elasticsearch.common.geo.GeoPoint;
 
 import javax.xml.bind.JAXBElement;
 import java.io.File;
@@ -102,6 +101,7 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
         indexStatus.setFileId(fileInfo.getFileId());
         indexStatus.setIndexedObservations(0);
         indexStatus.setTime(System.currentTimeMillis());
+
         try {
             Content content = ownCloudDao.getOM(fileInfo.getUuid());
             JAXBElement<InsertObservationType> result = ParseUtil.parse(omParser, content.getContent());
@@ -118,88 +118,100 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
                 // Get the procedure
                 String procedure = observation.getProcedure();
                 String systemUuid = new File(procedure).getName();
-                final List<Ancestor> ancestors = getAncestors(systemUuid, observation.getBeginPosition(),
-                        observation.getEndPosition());
 
-                // Retrieve the observation result and parse it
-                OMResult observationResult = observation.getResult();
                 // Retrieve the sensorML
                 final SensorML sensor = cacheSystem.getData(systemUuid, observation.getBeginPosition(),
                         observation.getEndPosition());
 
-                // Retrieve the first sensor in ancestors with coordinates
-                final Axis axis = getFirstValidAxisInSML(ancestors, observation.getBeginPosition(), observation.getEndPosition());
+                if(sensor != null){
+                    // Retrieve the observation result and parse it
+                    OMResult observationResult = observation.getResult();
 
-                observationDataManager.readData(fileInfo.getUuid(), observationResult, new Consumer<TimePosition>() {
+                    final List<Ancestor> ancestors = getAncestors(systemUuid, observation.getBeginPosition(),
+                            observation.getEndPosition());
 
-                    private SensorML usedSensor = sensor;
-                    private Axis usedAxis = axis;
+                    // Retrieve the first sensor in ancestors with coordinates
+                    final Axis axis = getFirstValidAxisInSML(ancestors, observation.getBeginPosition(), observation.getEndPosition());
 
-                    @Override
-                    public void accept(TimePosition timePosition) {
+                    boolean hasData = observationDataManager.readData(fileInfo.getUuid(), observationResult, new Consumer<TimePosition>() {
 
-                        String identifier = observation.getIdentifier();
+                        private SensorML usedSensor = sensor;
+                        private Axis usedAxis = axis;
 
-                        boolean hasData = false;
+                        @Override
+                        public void accept(TimePosition timePosition) {
 
-                        if(timePosition != null) {
+                            String identifier = observation.getIdentifier();
 
-                            hasData = true;
-                            // Si le system n'a pas été trouvé via les dates de
-                            // l'observation, on essaye de le
-                            // trouver via la date de la première position
-                            if (usedSensor == null) {
-                                usedSensor = cacheSystem.getData(systemUuid, timePosition.getDate(),
-                                        timePosition.getDate());
-                            }
-                            if (usedSensor == null) {
-                                System.out.println("Unable to find SML " + systemUuid);
-                                throw new SensorNotFoundException("Unable to find SML " + systemUuid);
-                            }
-                            if ((timePosition.getLatitude() == null || timePosition.getLongitude() == null) && usedAxis == null) {
-                                usedAxis = getFirstValidAxisInSML(ancestors, timePosition.getDate(),
-                                        timePosition.getDate());
-                            }
+                            if(timePosition != null) {
 
-                            ObservationJson item = new ObservationJson();
-                            item.setUuid(identifier);
-                            item.setAncestors(ancestors);
-                            item.setName(observation.getName());
-                            item.setResult(observationResult.getUrl());
-                            item.setAuthor(content.getUser());
+                                // Si le system n'a pas été trouvé via les dates de
+                                // l'observation, on essaye de le
+                                // trouver via la date de la première position
+                                if (usedSensor == null) {
+                                    usedSensor = cacheSystem.getData(systemUuid, timePosition.getDate(),
+                                            timePosition.getDate());
+                                }
+                                if (usedSensor == null) {
+                                    System.out.println("Unable to find SML " + systemUuid);
+                                    throw new SensorNotFoundException("Unable to find SML " + systemUuid);
+                                }
+                                if ((timePosition.getLatitude() == null || timePosition.getLongitude() == null) && usedAxis == null) {
+                                    usedAxis = getFirstValidAxisInSML(ancestors, timePosition.getDate(),
+                                            timePosition.getDate());
+                                }
 
-                            item.setDescription(observation.getDescription());
-                            item.setUpdateTimestamp(observation.getUpdateDate());
+                                ObservationJson item = new ObservationJson();
+                                item.setUuid(identifier);
+                                item.setAncestors(ancestors);
+                                item.setName(observation.getName());
+                                item.setResult(observationResult.getUrl());
+                                item.setAuthor(content.getUser());
 
-                            // Get the timestamp
-                            item.setResultTimestamp(timePosition.getDate());
+                                item.setDescription(observation.getDescription());
+                                item.setUpdateTimestamp(observation.getUpdateDate());
 
-                            item.setDeploymentId(String.valueOf(Objects.hash(identifier, usedSensor.getUuid(),
-                                    usedSensor.getStartTime(), usedSensor.getEndTime())));
+                                // Get the timestamp
+                                item.setResultTimestamp(timePosition.getDate());
 
-                            if (timePosition.getLatitude() != null && timePosition.getLongitude() != null) {
-                                item.setDepth(timePosition.getDepth());
-                                item.setCoordinates(timePosition.getLatitude() + "," + timePosition.getLongitude());
-                            } else if (usedAxis != null) {
-                                item.setDepth(usedAxis.getDep());
-                                item.setCoordinates(usedAxis.getLat().doubleValue() + "," + usedAxis.getLon().doubleValue());
-                            }
+                                item.setDeploymentId(String.valueOf(Objects.hash(identifier, usedSensor.getUuid(),
+                                        usedSensor.getStartTime(), usedSensor.getEndTime())));
 
-                            // Set permissions
-                            item.setPermission(permission);
+                                if (timePosition.getLatitude() != null && timePosition.getLongitude() != null) {
+                                    item.setDepth(timePosition.getDepth());
+                                    item.setCoordinates(timePosition.getLatitude() + "," + timePosition.getLongitude());
+                                } else if (usedAxis != null) {
+                                    item.setDepth(usedAxis.getDep());
+                                    item.setCoordinates(usedAxis.getLat().doubleValue() + "," + usedAxis.getLon().doubleValue());
+                                }
 
-                            String uuid = new StringBuilder(identifier).append(ID_SEPARATOR)
-                                    .append(String.format(FORMAT_ZERO_PAD, timePosition.getRecordNumber())).toString();
-                            if (elasticWriter.write(uuid, item)) {
-                                indexStatus.increaseIndexed();
+                                // Set permissions
+                                item.setPermission(permission);
+
+                                String uuid = new StringBuilder(identifier).append(ID_SEPARATOR)
+                                        .append(String.format(FORMAT_ZERO_PAD, timePosition.getRecordNumber())).toString();
+
+                                //write observation
+                                if (elasticWriter.write(uuid, item)) {
+                                    indexStatus.increaseIndexed();
+                                }
                             }
                         }
+                    });
 
-                        String uuid = new StringBuilder(identifier).append(ID_SEPARATOR)
-                                .append(String.format(FORMAT_ZERO_PAD, fileInfo.getFileId())).toString();
-                        elasticWriter.write(uuid, hasData, fileInfo);
-                    }
-                });
+                    //index systems
+                    List<SensorML> sensors = new ArrayList<>();
+                    fetchSystems(sensor, sensors);
+                    writeSystems(observation.getIdentifier(), sensors, hasData);
+
+                } else {
+                    //sensor not found : indexation for this observation should not occur
+                    indexStatus.setStatus(false);
+                    String message = String.format("Sensor %s not found, indexation for observation %s is canceled",
+                            systemUuid, observation.getIdentifier());
+                    ReportManager.log(message);
+                    LOGGER.warning(message);
+                }
 
                 ownCloudDao.updateIndexStatus(indexStatus);
                 ReportManager.log(String.format("File %s, Sync succeed - Indexed elements : %d", fileInfo.getName(),
@@ -212,7 +224,29 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
             LOGGER.log(Level.SEVERE, e.getMessage(), e);
             ownCloudDao.updateIndexStatus(indexStatus);
         }
+    }
 
+    /**
+     * Complete a list of systems from the given sensor with all its component recursively
+     * @param sensor
+     * @param systems
+     */
+    private void fetchSystems(SensorML sensor, List<SensorML> systems) {
+        if(sensor.getComponents() != null){
+            for(Comp component : sensor.getComponents()){
+                String idSystem = component.getHref().substring(component.getHref().lastIndexOf("/") + 1);
+                SensorML sml = cacheSystem.getData(idSystem);
+                fetchSystems(sml,systems);
+            }
+        }
+        systems.add(sensor);
+    }
+
+    protected void writeSystems(String identifier, List<SensorML> sensors, boolean hasData) {
+        String uuid = new StringBuilder(identifier).append(ID_SEPARATOR).append("1").append(ID_SEPARATOR).toString();
+        for (int i = 0; i< sensors.size(); i++) {
+            elasticWriter.write(uuid + String.format(FORMAT_ZERO_PAD, i), sensors.get(i), hasData);
+        }
     }
 
     protected Axis getFirstValidAxisInSML(List<Ancestor> ancestors, Date start, Date end) {
