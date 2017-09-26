@@ -6,20 +6,21 @@ import fr.ifremer.sensornanny.sync.dao.impl.ObservationDaoImpl;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.Ancestor;
 import fr.ifremer.sensornanny.sync.dto.elasticsearch.ObservationJson;
 import fr.ifremer.sensornanny.sync.manager.NodeManager;
+
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Objects;
+
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.bucket.geogrid.GeoHashGridBuilder;
+import org.elasticsearch.search.aggregations.bucket.geogrid.GeoGridAggregationBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Objects;
 
 @Category(IntegrationTest.class)
 public class ElasticDaoTest extends IntegrationTest {
@@ -83,9 +84,9 @@ public class ElasticDaoTest extends IntegrationTest {
         SearchRequestBuilder searchRequest = NodeManager.getInstance().getClient().prepareSearch(Config
                 .observationsIndex());
 
-        GeoHashGridBuilder geohashAggregation = AggregationBuilders.geohashGrid("agGeo").precision(4).field(
-                "snanny-coordinates");
-
+        GeoGridAggregationBuilder geohashAggregation = AggregationBuilders.geohashGrid("agGeo").precision(4).field(
+               "snanny-coordinates");
+        
         searchRequest.addAggregation(geohashAggregation);
 
         searchRequest.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);

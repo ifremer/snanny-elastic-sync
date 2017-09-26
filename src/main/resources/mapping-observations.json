@@ -72,11 +72,7 @@
     "snanny-coordinates": {
       "type":"geo_point",
       "doc_values": true,
-      "store": true,
-      "fielddata": {
-        "format": "compressed",
-        "precision": "1km"
-      }
+      "store": true
     },
     "snanny-description": {
       "type": "string"

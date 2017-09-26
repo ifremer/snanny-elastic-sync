@@ -18,6 +18,7 @@ import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.SearchHit;
@@ -78,7 +79,7 @@ public class SystemDaoImpl implements ISystemDao {
                 SNANNY_UUID, uuid + WILDCARDS)).setScroll(scroll).setSize(NUMBER_OF_ITEMS_PER_DELETION).get();
 
         // While there are items to delete
-        int items = search.getHits().hits().length;
+        int items = search.getHits().getHits().length;
         while (items > 0) {
             // Create a bulk item of deletion
             BulkRequestBuilder bulk = client.prepareBulk();
@@ -89,7 +90,7 @@ public class SystemDaoImpl implements ISystemDao {
             bulk.execute();
             // Get the next page
             search = client.prepareSearchScroll(search.getScrollId()).setScroll(scroll).execute().actionGet();
-            items = search.getHits().hits().length;
+            items = search.getHits().getHits().length;
         }
     }
 
@@ -105,7 +106,7 @@ public class SystemDaoImpl implements ISystemDao {
             item.addProperty(SNANNY_SYSTEM_HASDATA, hasData);
 
             UpdateRequest updateRequest = new UpdateRequest(Config.systemsIndex(), SNANNY_SYSTEMS, uuid);
-            updateRequest.doc(item.toString()).upsert(item.toString());
+            updateRequest.doc(item.toString(), XContentType.JSON).upsert(item.toString(), XContentType.JSON);
 
             bulkProcessor.add(updateRequest);
             return true;
