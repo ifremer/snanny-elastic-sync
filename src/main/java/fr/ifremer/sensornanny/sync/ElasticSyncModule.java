@@ -2,6 +2,7 @@ package fr.ifremer.sensornanny.sync;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.matcher.Matchers;
+import com.google.inject.multibindings.Multibinder;
 
 import fr.ifremer.sensornanny.sync.advice.LogAdvice;
 import fr.ifremer.sensornanny.sync.advice.LogAdviceSimpleMatcher;
@@ -20,6 +21,11 @@ import fr.ifremer.sensornanny.sync.dao.impl.ObservationDaoImpl;
 import fr.ifremer.sensornanny.sync.dao.impl.OwncloudDaoImpl;
 import fr.ifremer.sensornanny.sync.dao.impl.SystemDaoImpl;
 import fr.ifremer.sensornanny.sync.dao.impl.TermDaoImpl;
+import fr.ifremer.sensornanny.sync.io.DataFileReader;
+import fr.ifremer.sensornanny.sync.io.Bz2ArchiveReader;
+import fr.ifremer.sensornanny.sync.io.GzArchiveReader;
+import fr.ifremer.sensornanny.sync.io.OwnCloudFileReader;
+import fr.ifremer.sensornanny.sync.io.ZipArchiveReader;
 import fr.ifremer.sensornanny.sync.parse.ParserManager;
 import fr.ifremer.sensornanny.sync.parse.impl.OMParser;
 import fr.ifremer.sensornanny.sync.parse.impl.SensorMLParser;
@@ -54,6 +60,13 @@ public class ElasticSyncModule extends AbstractModule {
         bind(IElasticWriter.class).to(ElasticWriterImpl.class).asEagerSingleton();
         bind(IElasticProcessor.class).to(ElasticProcessorImpl.class);
         bind(ObservationDelegateProcessorImpl.class);
+
+        // File Reader
+        Multibinder<DataFileReader> fileReaderBindings = Multibinder.newSetBinder(binder(),DataFileReader.class);
+        fileReaderBindings.addBinding().to(ZipArchiveReader.class);
+        fileReaderBindings.addBinding().to(Bz2ArchiveReader.class);
+        fileReaderBindings.addBinding().to(GzArchiveReader.class);
+        bind(OwnCloudFileReader.class);
 
         // Observation data manager - using semaphores to handle low memory usage
         bind(ObservationDataManager.class);

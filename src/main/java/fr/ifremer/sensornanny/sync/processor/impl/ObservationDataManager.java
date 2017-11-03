@@ -1,9 +1,12 @@
 package fr.ifremer.sensornanny.sync.processor.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Semaphore;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.springframework.web.client.HttpClientErrorException;
 import com.google.inject.Inject;
 
@@ -15,17 +18,23 @@ import fr.ifremer.sensornanny.sync.dao.IOwncloudDao;
 import fr.ifremer.sensornanny.sync.dao.rest.DataNotFoundException;
 import fr.ifremer.sensornanny.sync.dto.model.OMResult;
 import fr.ifremer.sensornanny.sync.dto.owncloud.FileSizeInfo;
+import fr.ifremer.sensornanny.sync.manager.DataFileManager;
 import fr.ifremer.sensornanny.sync.parse.ParserManager;
 
 public class ObservationDataManager {
 
-    public static final int ONE_MEGA_OCTECT_IN_OCTET = 1000000;
+    protected static final int ONE_MEGA_OCTECT_IN_OCTET = 1000000;
+
+    private static final Logger LOGGER = Logger.getLogger(ObservationDataManager.class.getName());
 
     @Inject
     private ParserManager parserManager;
 
     @Inject
     private IOwncloudDao owncloudDao;
+
+    @Inject
+    private DataFileManager dataFileManager;
 
     private Semaphore semaphore = new Semaphore(Config.maxMemory());
 
@@ -43,24 +52,25 @@ public class ObservationDataManager {
         boolean hasData = false;
         if (observationResult.getUrl() != null) {
             String fileName = new File(observationResult.getUrl()).getName();
+
             ObservationData data = ObservationData.of(fileName, observationResult.getRole());
             IObservationParser parser = parserManager.getParser(data);
             if (parser == null) {
-                return hasData;
+                return false;
             }
 
             Integer moduloForParser = Config.moduloForParser(parser.getClass());
-            FileSizeInfo fileSize = getFileSize(uuid, observationResult.getUrl());
+            FileSizeInfo fileSize = getFileSize(uuid);
             if (fileSize != null && fileSize.getFileSize() != null) {
                 Long fileInMo = fileSize.getFileSize() / ONE_MEGA_OCTECT_IN_OCTET;
                 int permits = fileInMo.intValue();
-                try {
+                //look for the good reader (archive or not)
+                try(InputStream fileStream = dataFileManager.getReader(fileName).getFile(uuid)) {
                     // Acquire size elements
                     acquire(permits);
-                    InputStream stream = owncloudDao.getResultData(uuid);
-                    if (stream != null) {
+                    if (fileStream != null) {
                         hasData = true;
-                        parser.read(data, stream,
+                        parser.read(data, fileStream,
                                 (TimePosition result) -> {
                                     if (result.getRecordNumber() % moduloForParser == 0) {
                                         consumer.accept(result);
@@ -69,10 +79,14 @@ public class ObservationDataManager {
                         );
                     }
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    LOGGER.severe("Observation reader thread was interrupted");
                 } catch (DataNotFoundException e) {
+                    LOGGER.warning("File linked to id "+uuid+" is not found");
                     throw e;
-                } finally {
+                }  catch (IOException ioe){
+                    LOGGER.log(Level.SEVERE, "");
+                }
+                finally {
                     release(permits);
                 }
             } else {
@@ -85,7 +99,7 @@ public class ObservationDataManager {
         return hasData;
     }
 
-    private FileSizeInfo getFileSize(String uuid, String filePath) throws DataNotFoundException {
+    private FileSizeInfo getFileSize(String uuid) throws DataNotFoundException {
         try {
             return owncloudDao.getResultFileSize(uuid);
         } catch (HttpClientErrorException e) {

@@ -188,8 +188,7 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
                                 // Set permissions
                                 item.setPermission(permission);
 
-                                String uuid = new StringBuilder(identifier).append(ID_SEPARATOR)
-                                        .append(String.format(FORMAT_ZERO_PAD, timePosition.getRecordNumber())).toString();
+                                String uuid = identifier + ID_SEPARATOR + String.format(FORMAT_ZERO_PAD, timePosition.getRecordNumber());
 
                                 //write observation
                                 if (elasticWriter.write(uuid, item)) {
@@ -236,14 +235,15 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
             for(Comp component : sensor.getComponents()){
                 String idSystem = component.getHref().substring(component.getHref().lastIndexOf("/") + 1);
                 SensorML sml = cacheSystem.getData(idSystem);
-                fetchSystems(sml,systems);
+                if(sml != null)
+                    fetchSystems(sml,systems);
             }
         }
         systems.add(sensor);
     }
 
-    protected void writeSystems(String identifier, List<SensorML> sensors, boolean hasData) {
-        String uuid = new StringBuilder(identifier).append(ID_SEPARATOR).append("1").append(ID_SEPARATOR).toString();
+    private void writeSystems(String identifier, List<SensorML> sensors, boolean hasData) {
+        String uuid = identifier + ID_SEPARATOR + "1" + ID_SEPARATOR;
         for (int i = 0; i< sensors.size(); i++) {
             elasticWriter.write(uuid + String.format(FORMAT_ZERO_PAD, i), sensors.get(i), hasData);
         }
@@ -270,7 +270,7 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
      * @param endPosition   end date of the deployment
      * @throws Exception Exception while getting system
      */
-    protected List<Ancestor> getAncestors(String systemUuid, Date beginPosition, Date endPosition) throws Exception {
+    private List<Ancestor> getAncestors(String systemUuid, Date beginPosition, Date endPosition) throws Exception {
 
         List<Ancestor> systemAncestors = new ArrayList<>();
         // Get the first ancestor
