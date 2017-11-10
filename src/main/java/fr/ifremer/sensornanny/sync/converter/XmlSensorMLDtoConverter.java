@@ -4,6 +4,8 @@ import fr.ifremer.sensornanny.sync.dto.model.Axis;
 import fr.ifremer.sensornanny.sync.dto.model.Comp;
 import fr.ifremer.sensornanny.sync.dto.model.SensorML;
 import net.opengis.gml.v_3_2_1.CoordinatesType;
+import net.opengis.gml.v_3_2_1.DirectPositionType;
+import net.opengis.gml.v_3_2_1.PointType;
 import net.opengis.gml.v_3_2_1.TimePeriodType;
 import net.opengis.gml.v_3_2_1.TimePositionType;
 import net.opengis.sensorml.v_2_0.ComponentListType;
@@ -83,28 +85,57 @@ public class XmlSensorMLDtoConverter extends AbstractXMLConverter {
 		List<PositionUnionPropertyType> positions = system.getPosition();
 		if (positions != null) {
 			for (PositionUnionPropertyType position : positions) {
-				CoordinatesType coordinates = position.getPoint().getCoordinates();
-				String value = coordinates.getValue();
-				if (StringUtils.isNotBlank(value)) {
-					Axis axis = new Axis();
-					// TODO Constant
-					value = value.replaceAll(DOUBLE_SPACE, SPACE);
-					String[] split = value.split(SPACE);
-					switch (split.length) {
-					case 3:
-						axis.setDep(Double.valueOf(split[2]));
-					case 2:
-						axis.setLon(Double.valueOf(split[1]));
-					case 1:
-						axis.setLat(Double.valueOf(split[0]));
-						break;
+				PointType point = position.getPoint();
 
-					}
+				Axis axis = point.isSetPos() ? extractPositionFromPos(point.getPos()) :
+					extractPositionFromCoordinates(point.getCoordinates());
+
+				if(axis != null){
 					ret.setCoordinate(axis);
 				}
 			}
 		}
 	}
+
+	@Deprecated
+	private Axis extractPositionFromCoordinates(CoordinatesType coordinates ){
+		Axis axis = null;
+		String value = coordinates.getValue();
+		if (StringUtils.isNotBlank(value)){
+			axis = new Axis();
+			value = value.replaceAll(DOUBLE_SPACE, SPACE);
+			String[] split = value.split(SPACE);
+			switch (split.length) {
+				case 3:
+					axis.setDep(Double.valueOf(split[2]));
+				case 2:
+					axis.setLon(Double.valueOf(split[1]));
+				case 1:
+					axis.setLat(Double.valueOf(split[0]));
+					break;
+			}
+		}
+		return axis;
+	}
+
+	private Axis extractPositionFromPos(DirectPositionType position){
+
+		Axis axis  = null;
+		List<Double> value = position.getValue();
+		if(value != null && !value.isEmpty()){
+			axis = new Axis();
+			//depth is always the last value
+			axis.setDep(value.get(value.size()-1));
+			//if the coordinate system is complete, we set the whole axis
+			if(value.size() == 3){
+				axis.setLat(value.get(0));
+				axis.setLon(value.get(1));
+			}
+		}
+
+		return axis;
+	}
+
 
 	private void extractComponents(SensorML ret, PhysicalSystemType system) {
 		if (system.getComponents() != null) {

@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -177,12 +178,21 @@ public class ObservationDelegateProcessorImpl implements IDelegateProcessor {
                                 item.setDeploymentId(String.valueOf(Objects.hash(identifier, usedSensor.getUuid(),
                                         usedSensor.getStartTime(), usedSensor.getEndTime())));
 
-                                if (timePosition.getLatitude() != null && timePosition.getLongitude() != null) {
-                                    item.setDepth(timePosition.getDepth());
-                                    item.setCoordinates(timePosition.getLatitude() + "," + timePosition.getLongitude());
-                                } else if (usedAxis != null) {
-                                    item.setDepth(usedAxis.getDep());
-                                    item.setCoordinates(usedAxis.getLat().doubleValue() + "," + usedAxis.getLon().doubleValue());
+                                //Depth
+                                Number depth = Optional.ofNullable((Number)timePosition.getDepth()).orElseGet( () ->
+                                        Optional.ofNullable(usedAxis.getDep()).orElse(null)
+                                );
+                                item.setDepth(depth);
+
+                                //Latitude & longitude
+                                Number lat = Optional.ofNullable((Number)timePosition.getLatitude()).orElseGet( () ->
+                                        Optional.ofNullable(usedAxis.getLat()).orElse(null)
+                                );
+                                Number lon = Optional.ofNullable((Number)timePosition.getLongitude()).orElseGet( () ->
+                                        Optional.ofNullable(usedAxis.getLon()).orElse(null)
+                                );
+                                if(lat != null && lon != null){
+                                    item.setCoordinates(lat.doubleValue() + "," + lon.doubleValue());
                                 }
 
                                 // Set permissions
